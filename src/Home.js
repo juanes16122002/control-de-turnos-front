@@ -54,6 +54,9 @@ const Home = () => {
 
   const [error, setError] = useState('');
 
+  // NUEVO: turno que se está editando (null = creando)
+  const [turnoEditando, setTurnoEditando] = useState(null);
+
   // =========================
   // Helpers de cálculo horas
   // =========================
@@ -307,7 +310,7 @@ const Home = () => {
         ? new Date(`${fechaTurno}T${horaSalidaTurno}:00`).toISOString()
         : null;
 
-      await api.post('/turnos', {
+      const payload = {
         empleado_id: empleadoSeleccionado.id,
         fecha: fechaTurno,
         hora_entrada: horaEntradaISO,
@@ -315,8 +318,16 @@ const Home = () => {
         empresa_id: empresaTurno,
         nombre_evento: nombreEvento.trim(),
         area: areaTurno.trim(),
-      });
+      };
 
+      // SI HAY turnoEditando => PUT, SINO => POST
+      if (turnoEditando) {
+        await api.put(`/turnos/${turnoEditando.id}`, payload);
+      } else {
+        await api.post('/turnos', payload);
+      }
+
+      // Recargar turnos del mes actual
       const [anio, mes] = mesSeleccionado.split('-');
       const params = { anio, mes };
       if (empresaFiltro) params.empresa_id = empresaFiltro;
@@ -330,12 +341,57 @@ const Home = () => {
       setMostrandoFormTurno(false);
       setNombreEvento('');
       setAreaTurno('');
+      setEmpresaTurno('');
+      setTurnoEditando(null); // salimos de modo edición
     } catch (err) {
       console.error(err);
-      setError('No se pudo agregar el turno');
+      setError(
+        turnoEditando
+          ? 'No se pudo actualizar el turno'
+          : 'No se pudo agregar el turno'
+      );
     } finally {
       setCargandoTurnoNuevo(false);
     }
+  };
+
+  // Cuando se pulsa el botón "Editar" en la tabla
+  const handleEditarTurnoClick = (turno) => {
+    setTurnoEditando(turno);
+
+    // Fecha: usamos el campo fecha (YYYY-MM-DD)
+    if (turno.fecha) {
+      setFechaTurno(turno.fecha);
+    }
+
+    // Hora entrada / salida en formato HH:mm local
+    if (turno.hora_entrada) {
+      const d = new Date(turno.hora_entrada);
+      const hhmm = d.toLocaleTimeString('es-CL', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      setHoraEntradaTurno(hhmm);
+    }
+
+    if (turno.hora_salida) {
+      const d = new Date(turno.hora_salida);
+      const hhmm = d.toLocaleTimeString('es-CL', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+      setHoraSalidaTurno(hhmm);
+    } else {
+      setHoraSalidaTurno('');
+    }
+
+    setNombreEvento(turno.nombre_evento || '');
+    setAreaTurno(turno.area || '');
+    setEmpresaTurno(turno.empresa_id || '');
+
+    setMostrandoFormTurno(true);
   };
 
   const handleEliminarTurno = async (id) => {
@@ -545,6 +601,7 @@ const Home = () => {
             onClickAgregarTurno={() => {
               setMostrandoFormTurno(true);
               setEmpresaTurno(empresaFiltro || '');
+              setTurnoEditando(null); // modo creación
             }}
             onExportExcel={handleExportExcel}
             onExportPDF={handleExportPDF}
@@ -552,7 +609,7 @@ const Home = () => {
           />
         </div>
 
-        {/* Formulario de nuevo turno */}
+        {/* Formulario de nuevo turno / edición */}
         {mostrandoFormTurno && (
           <TurnoForm
             empresas={empresas}
@@ -570,7 +627,11 @@ const Home = () => {
             setAreaTurno={setAreaTurno}
             cargandoTurnoNuevo={cargandoTurnoNuevo}
             onSubmit={handleGuardarTurno}
-            onCancel={() => setMostrandoFormTurno(false)}
+            onCancel={() => {
+              setMostrandoFormTurno(false);
+              setTurnoEditando(null);
+            }}
+            modoEdicion={!!turnoEditando} // NUEVO
           />
         )}
 
@@ -589,6 +650,7 @@ const Home = () => {
           calcularHorasExtra={calcularHorasExtra}
           turnoEliminandoId={turnoEliminandoId}
           onEliminarTurno={handleEliminarTurno}
+          onEditarTurno={handleEditarTurnoClick} // <<--- AQUÍ SE CONECTA
         />
       </main>
     </div>

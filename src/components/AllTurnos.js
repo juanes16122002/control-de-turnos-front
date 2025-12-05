@@ -1,6 +1,8 @@
-// src/components/AllTurnos.js (o donde lo tengas)
+// src/components/AllTurnos.js
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+
+const TARIFA_HORA = 3750; // Debe coincidir con el backend
 
 const AllTurnos = () => {
   const [turnos, setTurnos] = useState([]);
@@ -36,19 +38,29 @@ const AllTurnos = () => {
     return diffMs / (1000 * 60 * 60); // horas decimales
   };
 
-  const calcularHoras = (horaEntrada, horaSalida) => {
+  // Para compatibilidad en caso de que el backend no tenga horas_trabajadas
+  const calcularHorasBaseFront = (horaEntrada, horaSalida) => {
     const horas = obtenerHorasTotales(horaEntrada, horaSalida);
     if (horas === null) return '-';
     const base = Math.min(horas, 8); // máximo 8 horas
     return base.toFixed(2);
   };
 
-  const calcularHorasExtra = (horaEntrada, horaSalida) => {
+  const calcularHorasExtraFront = (horaEntrada, horaSalida) => {
     const horas = obtenerHorasTotales(horaEntrada, horaSalida);
     if (horas === null) return '-';
     const base = Math.min(horas, 8);
     const extra = Math.max(horas - base, 0);
     return extra.toFixed(2);
+  };
+
+  const formatearMoneda = (valor) => {
+    if (valor == null) return '-';
+    return valor.toLocaleString('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      maximumFractionDigits: 0,
+    });
   };
 
   // =========================
@@ -183,6 +195,63 @@ const AllTurnos = () => {
   const puedeExportar = turnos.length > 0;
 
   // =========================
+  // Totales (para el resumen)
+  // =========================
+  const totales = turnos.reduce(
+    (acc, t) => {
+      // Horas base y extra: usar backend si trae, si no calculamos aquí
+      let horasTrab =
+        typeof t.horas_trabajadas === 'number'
+          ? t.horas_trabajadas
+          : (() => {
+              const horas = obtenerHorasTotales(t.hora_entrada, t.hora_salida);
+              if (horas === null) return 0;
+              return Math.min(horas, 8);
+            })();
+
+      let horasExtra =
+        typeof t.horas_extra === 'number'
+          ? t.horas_extra
+          : (() => {
+              const horas = obtenerHorasTotales(t.hora_entrada, t.hora_salida);
+              if (horas === null) return 0;
+              const base = Math.min(horas, 8);
+              return Math.max(horas - base, 0);
+            })();
+
+      const valorExtra =
+        typeof t.valor_horas_extra === 'number'
+          ? t.valor_horas_extra
+          : horasExtra * TARIFA_HORA;
+
+      const valorFijo =
+        typeof t.valor_fijo === 'number'
+          ? t.valor_fijo
+          : horasTrab * TARIFA_HORA;
+
+      const sueldo =
+        typeof t.sueldo_total === 'number'
+          ? t.sueldo_total
+          : valorExtra + valorFijo;
+
+      return {
+        horasTrab: acc.horasTrab + horasTrab,
+        horasExtra: acc.horasExtra + horasExtra,
+        valorExtra: acc.valorExtra + valorExtra,
+        valorFijo: acc.valorFijo + valorFijo,
+        sueldo: acc.sueldo + sueldo,
+      };
+    },
+    {
+      horasTrab: 0,
+      horasExtra: 0,
+      valorExtra: 0,
+      valorFijo: 0,
+      sueldo: 0,
+    }
+  );
+
+  // =========================
   // Render
   // =========================
   return (
@@ -192,7 +261,7 @@ const AllTurnos = () => {
           <h1 className="text-2xl font-bold">Todos los turnos</h1>
           <p className="text-sm text-zinc-400">
             Visualiza los turnos de todos los empleados, filtra por fechas, empresa y empleado,
-            y exporta a Excel o PDF.
+            y exporta a Excel o PDF. Si filtras por un solo empleado, los totales corresponden a ese empleado.
           </p>
         </div>
 
@@ -298,60 +367,131 @@ const AllTurnos = () => {
             No hay turnos para los filtros seleccionados.
           </p>
         ) : (
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-zinc-400 border-b border-zinc-800">
-                <th className="text-left py-2 pr-4">Empleado</th>
-                <th className="text-left py-2 pr-4">Fecha</th>
-                <th className="text-left py-2 pr-4">Empresa</th>
-                <th className="text-left py-2 pr-4">Evento</th>
-                <th className="text-left py-2 pr-4">Área</th>
-                <th className="text-left py-2 pr-4">Hora entrada</th>
-                <th className="text-left py-2 pr-4">Hora salida</th>
-                <th className="text-left py-2 pr-4">Horas trabajadas</th>
-                <th className="text-left py-2 pr-4">Horas extra</th>
-              </tr>
-            </thead>
-            <tbody>
-              {turnos.map((t) => (
-                <tr key={t.id} className="border-b border-zinc-800/60">
-                  <td className="py-2 pr-4">
-                    {t.empleado_nombre || '-'}
-                  </td>
-                  <td className="py-2 pr-4">{t.fecha || '-'}</td>
-                  <td className="py-2 pr-4">
-                    {t.empresa_nombre || 'Sin empresa'}
-                  </td>
-                  <td className="py-2 pr-4">
-                    {t.nombre_evento || '-'}
-                  </td>
-                  <td className="py-2 pr-4">{t.area || '-'}</td>
-                  <td className="py-2 pr-4">
-                    {t.hora_entrada
-                      ? new Date(t.hora_entrada).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : '-'}
-                  </td>
-                  <td className="py-2 pr-4">
-                    {t.hora_salida
-                      ? new Date(t.hora_salida).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : '-'}
-                  </td>
-                  <td className="py-2 pr-4">
-                    {calcularHoras(t.hora_entrada, t.hora_salida)}
-                  </td>
-                  <td className="py-2 pr-4">
-                    {calcularHorasExtra(t.hora_entrada, t.hora_salida)}
-                  </td>
+          <>
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-zinc-400 border-b border-zinc-800">
+                  <th className="text-left py-2 pr-4">Empleado</th>
+                  <th className="text-left py-2 pr-4">Fecha</th>
+                  <th className="text-left py-2 pr-4">Empresa</th>
+                  <th className="text-left py-2 pr-4">Evento</th>
+                  <th className="text-left py-2 pr-4">Área</th>
+                  <th className="text-left py-2 pr-4">Hora entrada</th>
+                  <th className="text-left py-2 pr-4">Hora salida</th>
+                  <th className="text-left py-2 pr-4">Horas trabajadas</th>
+                  <th className="text-left py-2 pr-4">Horas extra</th>
+                  <th className="text-left py-2 pr-4">Valor horas extra</th>
+                  <th className="text-left py-2 pr-4">Valor fijo</th>
+                  <th className="text-left py-2 pr-4">Sueldo turno</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {turnos.map((t) => (
+                  <tr key={t.id} className="border-b border-zinc-800/60">
+                    <td className="py-2 pr-4">
+                      {t.empleado_nombre || '-'}
+                    </td>
+                    <td className="py-2 pr-4">{t.fecha || '-'}</td>
+                    <td className="py-2 pr-4">
+                      {t.empresa_nombre || 'Sin empresa'}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {t.nombre_evento || '-'}
+                    </td>
+                    <td className="py-2 pr-4">{t.area || '-'}</td>
+                    <td className="py-2 pr-4">
+                      {t.hora_entrada
+                        ? new Date(t.hora_entrada).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : '-'}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {t.hora_salida
+                        ? new Date(t.hora_salida).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : '-'}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {typeof t.horas_trabajadas === 'number'
+                        ? t.horas_trabajadas.toFixed(2)
+                        : calcularHorasBaseFront(
+                            t.hora_entrada,
+                            t.hora_salida
+                          )}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {typeof t.horas_extra === 'number'
+                        ? t.horas_extra.toFixed(2)
+                        : calcularHorasExtraFront(
+                            t.hora_entrada,
+                            t.hora_salida
+                          )}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {formatearMoneda(
+                        typeof t.valor_horas_extra === 'number'
+                          ? t.valor_horas_extra
+                          : (t.horas_extra || 0) * TARIFA_HORA
+                      )}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {formatearMoneda(
+                        typeof t.valor_fijo === 'number'
+                          ? t.valor_fijo
+                          : (t.horas_trabajadas || 0) * TARIFA_HORA
+                      )}
+                    </td>
+                    <td className="py-2 pr-4">
+                      {formatearMoneda(
+                        typeof t.sueldo_total === 'number'
+                          ? t.sueldo_total
+                          : ((t.horas_trabajadas || 0) +
+                            (t.horas_extra || 0)) * TARIFA_HORA
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Resumen de totales */}
+            <div className="mt-4 grid gap-3 md:grid-cols-5 text-xs md:text-sm">
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl px-3 py-2">
+                <p className="text-zinc-400">Total horas trabajadas</p>
+                <p className="font-semibold">
+                  {totales.horasTrab.toFixed(2)}
+                </p>
+              </div>
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl px-3 py-2">
+                <p className="text-zinc-400">Total horas extra</p>
+                <p className="font-semibold">
+                  {totales.horasExtra.toFixed(2)}
+                </p>
+              </div>
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl px-3 py-2">
+                <p className="text-zinc-400">Total valor horas extra</p>
+                <p className="font-semibold">
+                  {formatearMoneda(totales.valorExtra)}
+                </p>
+              </div>
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl px-3 py-2">
+                <p className="text-zinc-400">Total valor fijo</p>
+                <p className="font-semibold">
+                  {formatearMoneda(totales.valorFijo)}
+                </p>
+              </div>
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl px-3 py-2">
+                <p className="text-zinc-400">Sueldo total</p>
+                <p className="font-semibold">
+                  {formatearMoneda(totales.sueldo)}
+                </p>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>

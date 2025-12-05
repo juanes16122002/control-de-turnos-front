@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import api from './api';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   useNavigate,
+  useLocation,
   Link,
 } from 'react-router-dom';
 
 import Home from './Home';
-import AllTurnos from './components/AllTurnos'; // 👈 AQUÍ EL CAMBIO
+import AllTurnos from './components/AllTurnos';
 
 // =======================
 //   COMPONENTE LOGIN
@@ -98,13 +98,19 @@ const Login = () => {
 };
 
 // =======================
-//        APP
+//   CONTENIDO CON RUTAS
 // =======================
-const App = () => {
+const AppContent = () => {
+  const location = useLocation();
+
+  // Rutas donde NO queremos mostrar el navbar
+  const ocultarNavbar =
+    location.pathname === '/' || location.pathname === '/login';
+
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        {/* Navbar superior */}
+    <div className="min-h-screen flex flex-col">
+      {/* Navbar superior (solo cuando no estamos en login) */}
+      {!ocultarNavbar && (
         <nav className="bg-zinc-950 border-b border-zinc-800 px-4 py-2 flex gap-4 text-sm text-zinc-200">
           <Link
             to="/home"
@@ -119,22 +125,33 @@ const App = () => {
             Todos los turnos
           </Link>
         </nav>
+      )}
 
-        {/* Contenido principal */}
-        <div className="flex-1">
-          <Routes>
-            {/* Login en raíz y /login */}
-            <Route path="/" element={<Login />} />
-            <Route path="/login" element={<Login />} />
+      {/* Contenido principal */}
+      <div className="flex-1">
+        <Routes>
+          {/* Login en raíz y /login */}
+          <Route path="/" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
-            {/* Home por empleado */}
-            <Route path="/home" element={<Home />} />
+          {/* Home por empleado */}
+          <Route path="/home" element={<Home />} />
 
-            {/* Vista global de todos los turnos */}
-            <Route path="/turnos" element={<AllTurnos />} />
-          </Routes>
-        </div>
+          {/* Vista global de todos los turnos */}
+          <Route path="/turnos" element={<AllTurnos />} />
+        </Routes>
       </div>
+    </div>
+  );
+};
+
+// =======================
+//        APP
+// =======================
+const App = () => {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 };
