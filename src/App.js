@@ -1,159 +1,99 @@
-import React, { useState } from 'react';
-import api from './api';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-  Link,
-} from 'react-router-dom';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { CalendarPlus, ClipboardList, LogOut, Calendar, LayoutDashboard } from 'lucide-react';
 
+import Login from './components/Login';
 import Home from './Home';
 import AllTurnos from './components/AllTurnos';
+import Dashboard from './components/Dashboard';
 
-// =======================
-//   COMPONENTE LOGIN
-// =======================
-const Login = () => {
-  const [usuario, setUsuario] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [error, setError] = useState('');
+const navItems = [
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/home', label: 'Agregar turno', icon: CalendarPlus },
+  { path: '/turnos', label: 'Todos los turnos', icon: ClipboardList },
+];
+
+const Sidebar = () => {
+  const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    try {
-      const response = await api.post('/login', {
-        usuario,
-        contrasena,
-      });
-
-      if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
-        navigate('/home');
-      }
-    } catch (err) {
-      setError('Usuario o contraseña incorrectos');
-    }
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    navigate('/login');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-neutral-900 to-zinc-800">
-      <div className="w-full max-w-sm bg-zinc-900/90 border border-zinc-800 rounded-2xl shadow-xl p-8 backdrop-blur">
-        <h2 className="text-2xl font-semibold text-white text-center mb-6">
-          Iniciar sesión
-        </h2>
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label
-              htmlFor="usuario"
-              className="block text-sm font-medium text-zinc-300 mb-1"
-            >
-              Usuario
-            </label>
-            <input
-              id="usuario"
-              type="text"
-              value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Ingresa tu usuario"
-              required
-            />
+    <aside className="w-64 min-h-screen bg-slate-900/50 border-r border-slate-800/50 flex flex-col shrink-0">
+      <div className="p-5 border-b border-slate-800/50">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <Calendar className="w-5 h-5 text-white" />
           </div>
-
           <div>
-            <label
-              htmlFor="contrasena"
-              className="block text-sm font-medium text-zinc-300 mb-1"
-            >
-              Contraseña
-            </label>
-            <input
-              id="contrasena"
-              type="password"
-              value={contrasena}
-              onChange={(e) => setContrasena(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Ingresa tu contraseña"
-              required
-            />
+            <h1 className="text-sm font-bold text-white">Turnos</h1>
+            <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Panel de control</p>
           </div>
-
-          {error && <div className="text-red-400 text-sm">{error}</div>}
-
-          <button
-            type="submit"
-            className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
-          >
-            Entrar
-          </button>
-        </form>
+        </div>
       </div>
-    </div>
+
+      <nav className="flex-1 p-3 space-y-1">
+        {navItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? 'bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
+              }`}
+            >
+              <Icon className={`w-4.5 h-4.5 ${isActive ? 'text-indigo-400' : ''}`} size={18} />
+              {item.label}
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="p-3 border-t border-slate-800/50">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-red-400 hover:bg-red-500/5 transition-all duration-200"
+        >
+          <LogOut size={18} />
+          Cerrar sesión
+        </button>
+      </div>
+    </aside>
   );
 };
 
-// =======================
-//   CONTENIDO CON RUTAS
-// =======================
 const AppContent = () => {
   const location = useLocation();
-
-  // Rutas donde NO queremos mostrar el navbar
-  const ocultarNavbar =
-    location.pathname === '/' || location.pathname === '/login';
+  const isAuthPage = location.pathname === '/' || location.pathname === '/login';
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navbar superior (solo cuando no estamos en login) */}
-      {!ocultarNavbar && (
-        <nav className="bg-zinc-950 border-b border-zinc-800 px-4 py-2 flex gap-4 text-sm text-zinc-200">
-          <Link
-            to="/home"
-            className="hover:text-white transition-colors"
-          >
-            Turnos por empleado
-          </Link>
-          <Link
-            to="/turnos"
-            className="hover:text-white transition-colors"
-          >
-            Todos los turnos
-          </Link>
-        </nav>
-      )}
-
-      {/* Contenido principal */}
-      <div className="flex-1">
+    <div className="min-h-screen bg-slate-950 bg-grid flex">
+      {!isAuthPage && <Sidebar />}
+      <main className="flex-1 overflow-auto">
         <Routes>
-          {/* Login en raíz y /login */}
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
-
-          {/* Home por empleado */}
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/home" element={<Home />} />
-
-          {/* Vista global de todos los turnos */}
           <Route path="/turnos" element={<AllTurnos />} />
         </Routes>
-      </div>
+      </main>
     </div>
   );
 };
 
-// =======================
-//        APP
-// =======================
-const App = () => {
-  return (
-    <Router>
-      <AppContent />
-    </Router>
-  );
-};
+const App = () => (
+  <Router>
+    <AppContent />
+  </Router>
+);
 
 export default App;
