@@ -6,6 +6,8 @@ import Login from './components/Login';
 import Home from './Home';
 import AllTurnos from './components/AllTurnos';
 import Dashboard from './components/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import api from './api';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,9 +19,19 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        await api.post('/logout', { refreshToken });
+      }
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
+    } finally {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      navigate('/login');
+    }
   };
 
   return (
@@ -81,9 +93,9 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/turnos" element={<AllTurnos />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/turnos" element={<ProtectedRoute><AllTurnos /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>

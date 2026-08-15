@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  TARIFA_HORA_EXTRA,
   calcularValoresTurno,
   formatearMoneda,
 } from '../helpers/horas';
@@ -99,7 +98,7 @@ const TurnosTable = ({
                       {v.horasExtra ? <span className="text-amber-400 font-medium">{v.horasExtra.toFixed(2)}</span> : '-'}
                     </td>
                     <td className="py-2.5 px-4 text-right whitespace-nowrap text-slate-400">
-                      {formatearMoneda(TARIFA_HORA_EXTRA)}
+                      {formatearMoneda(turno.tarifa_hora_extra)}
                     </td>
                     <td className="py-2.5 px-4 text-right whitespace-nowrap">
                       {v.valorExtra ? <span className="text-amber-400">{formatearMoneda(v.valorExtra)}</span> : '-'}
@@ -160,7 +159,7 @@ const TurnosTable = ({
                   {totales.horasExtra.toFixed(2)}
                 </td>
                 <td className="py-3 px-4 text-right text-slate-400">
-                  {formatearMoneda(TARIFA_HORA_EXTRA)}
+                  {'—'}
                 </td>
                 <td className="py-3 px-4 text-right font-semibold text-amber-400">
                   {formatearMoneda(totales.valorExtra)}

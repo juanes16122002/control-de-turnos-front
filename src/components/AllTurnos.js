@@ -33,6 +33,17 @@ const AllTurnos = () => {
   const [exportando, setExportando] = useState(false);
   const [error, setError] = useState('');
 
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totales, setTotales] = useState({
+    horasTrabajadas: 0,
+    horasExtra: 0,
+    valorHorasExtra: 0,
+    valorFijo: 0,
+    sueldo: 0,
+  });
+
   useEffect(() => {
     const cargarEmpleadosYEmpresas = async () => {
       try {
@@ -64,14 +75,14 @@ const AllTurnos = () => {
     return true;
   };
 
-  const fetchTurnos = async () => {
+  const fetchTurnos = async (pagina = 1) => {
     if (!validarRangoFechas()) return;
 
     try {
       setCargando(true);
       setError('');
 
-      const params = {};
+      const params = { page: pagina };
       if (fechaDesde && fechaHasta) {
         params.desde = fechaDesde;
         params.hasta = fechaHasta;
@@ -80,13 +91,26 @@ const AllTurnos = () => {
       if (empresaFiltro) params.empresa_id = empresaFiltro;
 
       const res = await api.get('/turnos', { params });
-      setTurnos(res.data);
+      setTurnos(res.data.data);
+      setTotal(res.data.total);
+      setTotalPages(res.data.totalPages);
+      setTotales(res.data.totales);
     } catch (err) {
       console.error(err);
       setError('No se pudieron cargar los turnos globales');
     } finally {
       setCargando(false);
     }
+  };
+
+  const buscarTurnos = () => {
+    setPage(1);
+    fetchTurnos(1);
+  };
+
+  const irPagina = (nuevaPagina) => {
+    setPage(nuevaPagina);
+    fetchTurnos(nuevaPagina);
   };
 
   useEffect(() => {
@@ -146,20 +170,6 @@ const AllTurnos = () => {
   };
 
   const puedeExportar = turnos.length > 0;
-
-  const totales = turnos.reduce(
-    (acc, t) => {
-      const v = calcularValoresTurno(t);
-      return {
-        horasTrab: acc.horasTrab + v.horasTrab,
-        horasExtra: acc.horasExtra + v.horasExtra,
-        valorExtra: acc.valorExtra + v.valorExtra,
-        valorFijo: acc.valorFijo + v.valorFijo,
-        sueldo: acc.sueldo + v.sueldoTotal,
-      };
-    },
-    { horasTrab: 0, horasExtra: 0, valorExtra: 0, valorFijo: 0, sueldo: 0 }
-  );
 
   return (
     <div className="p-6 space-y-6 animate-fade-in">
@@ -227,7 +237,7 @@ const AllTurnos = () => {
           </div>
 
           <button
-            onClick={fetchTurnos}
+            onClick={buscarTurnos}
             className="btn-primary btn-sm"
           >
             {cargando ? (
@@ -345,9 +355,9 @@ const AllTurnos = () => {
 
             <div className="grid gap-3 grid-cols-2 md:grid-cols-5 p-4 border-t border-slate-800/50 bg-slate-900/40">
               {[
-                { label: 'Horas trabajadas', value: totales.horasTrab.toFixed(2), icon: Clock, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-                { label: 'Horas extra', value: totales.horasExtra.toFixed(2), icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-                { label: 'Valor horas extra', value: formatearMoneda(totales.valorExtra), icon: DollarSign, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                { label: 'Horas trabajadas', value: (totales.horasTrabajadas || 0).toFixed(2), icon: Clock, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+                { label: 'Horas extra', value: (totales.horasExtra || 0).toFixed(2), icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+                { label: 'Valor horas extra', value: formatearMoneda(totales.valorHorasExtra), icon: DollarSign, color: 'text-amber-400', bg: 'bg-amber-500/10' },
                 { label: 'Valor fijo', value: formatearMoneda(totales.valorFijo), icon: Briefcase, color: 'text-blue-400', bg: 'bg-blue-500/10' },
                 { label: 'Sueldo total', value: formatearMoneda(totales.sueldo), icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
               ].map((stat) => {
@@ -362,6 +372,31 @@ const AllTurnos = () => {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 border-t border-slate-800/50">
+              <p className="text-xs text-slate-500">
+                Mostrando {turnos.length} de {total} turno{total !== 1 ? 's' : ''}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => irPagina(page - 1)}
+                  disabled={page <= 1 || cargando}
+                  className="btn-secondary btn-sm"
+                >
+                  Anterior
+                </button>
+                <span className="text-xs text-slate-400 whitespace-nowrap">
+                  Página {page} de {totalPages}
+                </span>
+                <button
+                  onClick={() => irPagina(page + 1)}
+                  disabled={page >= totalPages || cargando}
+                  className="btn-secondary btn-sm"
+                >
+                  Siguiente
+                </button>
+              </div>
             </div>
           </>
         )}

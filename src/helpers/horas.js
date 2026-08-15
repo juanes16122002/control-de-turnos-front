@@ -1,5 +1,5 @@
-export const TARIFA_HORA = 4750;
-export const TARIFA_HORA_EXTRA = 4750;
+const TARIFA_HORA_FALLBACK = 4750;
+const TARIFA_HORA_EXTRA_FALLBACK = 4750;
 
 export function obtenerHorasTotales(horaEntrada, horaSalida) {
   if (!horaEntrada || !horaSalida) return null;
@@ -30,6 +30,9 @@ export function calcularHorasExtra(horaEntrada, horaSalida) {
 }
 
 export function calcularValoresTurno(turno) {
+  const tarifaHora = turno.tarifa_hora != null ? turno.tarifa_hora : TARIFA_HORA_FALLBACK;
+  const tarifaHoraExtra = turno.tarifa_hora_extra != null ? turno.tarifa_hora_extra : TARIFA_HORA_EXTRA_FALLBACK;
+
   const horasTrab =
     typeof turno.horas_trabajadas === 'number'
       ? turno.horas_trabajadas
@@ -43,12 +46,12 @@ export function calcularValoresTurno(turno) {
   const valorExtra =
     typeof turno.valor_horas_extra === 'number'
       ? turno.valor_horas_extra
-      : horasExtra * TARIFA_HORA_EXTRA;
+      : horasExtra * tarifaHoraExtra;
 
   const valorFijo =
     typeof turno.valor_fijo === 'number'
       ? turno.valor_fijo
-      : horasTrab * TARIFA_HORA;
+      : horasTrab * tarifaHora;
 
   const sueldoTotal =
     typeof turno.sueldo_total === 'number'
