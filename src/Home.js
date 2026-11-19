@@ -416,7 +416,7 @@ const Home = () => {
   const puedeExportar = !!empleadoSeleccionado && turnos.length > 0;
 
   return (
-    <div className="h-full flex animate-fade-in">
+    <div className="flex flex-col md:flex-row md:min-h-screen animate-fade-in">
       <EmpleadosSidebar
         empleados={empleados}
         empleadoSeleccionado={empleadoSeleccionado}
@@ -435,18 +435,18 @@ const Home = () => {
         onActualizarEmpleado={handleActualizarEmpleado}
       />
 
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 min-w-0 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center">
-                <CalendarDays className="w-5 h-5 text-indigo-400" />
+              <div className="icon-tile">
+                <CalendarDays className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-white">
+                <h1 className="page-title">
                   {empleadoSeleccionado ? `Turnos de ${empleadoSeleccionado.nombre}` : 'Selecciona un empleado'}
                 </h1>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-neutral-500">
                   {empleadoSeleccionado
                     ? `${turnos.length} turno${turnos.length !== 1 ? 's' : ''} en el periodo`
                     : 'Elige un empleado de la lista lateral'}

@@ -58,14 +58,14 @@ const EmpleadosSidebar = ({
   };
 
   return (
-    <aside className="w-full md:w-72 lg:w-80 border-r border-slate-800/50 bg-slate-900/30 flex flex-col shrink-0">
-      <div className="p-4 border-b border-slate-800/30">
+    <aside className="w-full md:w-72 lg:w-80 border-b md:border-b-0 md:border-r border-neutral-800/50 bg-neutral-900/30 flex flex-col shrink-0" aria-label="Empleados">
+      <div className="p-4 border-b border-neutral-800/30">
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-              <Users className="w-4 h-4 text-indigo-400" />
+            <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/15 flex items-center justify-center">
+              <Users className="w-4 h-4 text-white" />
             </div>
-            <h2 className="text-sm font-semibold text-slate-200">Empleados</h2>
+            <h2 className="text-sm font-semibold text-neutral-200">Empleados</h2>
           </div>
           <button
             onClick={() => setMostrandoFormEmpleado((v) => !v)}
@@ -75,12 +75,12 @@ const EmpleadosSidebar = ({
             Agregar
           </button>
         </div>
-        <p className="text-[11px] text-slate-500 ml-[42px]">
+        <p className="text-[11px] text-neutral-500 ml-[42px]">
           {empleados.length} empleado{empleados.length !== 1 ? 's' : ''}
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
+      <div className="flex-1 overflow-y-auto p-3 space-y-1.5 max-h-[45vh] md:max-h-none">
         {mostrandoFormEmpleado && (
           <form onSubmit={handleSubmitNuevo} className="glass rounded-xl p-3 mb-3 animate-slide-down space-y-2">
             <input
@@ -127,8 +127,8 @@ const EmpleadosSidebar = ({
           </div>
         ) : empleados.length === 0 ? (
           <div className="text-center py-8">
-            <Users className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-            <p className="text-xs text-slate-500">No hay empleados registrados</p>
+            <Users className="w-8 h-8 text-neutral-700 mx-auto mb-2" />
+            <p className="text-xs text-neutral-500">No hay empleados registrados</p>
           </div>
         ) : (
           empleados.map((empleado) => {
@@ -143,8 +143,8 @@ const EmpleadosSidebar = ({
                   <div
                     className={`group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 border ${
                       estaSeleccionado
-                        ? 'bg-indigo-500/10 border-indigo-500/20 shadow-sm'
-                        : 'bg-slate-900/40 border-transparent hover:bg-slate-800/40 hover:border-slate-700/30'
+                        ? 'bg-white/[0.06] border-white/15 shadow-sm'
+                        : 'bg-neutral-900/40 border-transparent hover:bg-neutral-800/40 hover:border-neutral-700/30'
                     }`}
                   >
                     <button
@@ -154,38 +154,40 @@ const EmpleadosSidebar = ({
                       <div
                         className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${
                           estaSeleccionado
-                            ? 'bg-indigo-500/20 text-indigo-300'
-                            : 'bg-slate-800 text-slate-400 group-hover:bg-slate-700'
+                            ? 'bg-white/10 text-white'
+                            : 'bg-neutral-800 text-neutral-400 group-hover:bg-neutral-700'
                         }`}
                       >
                         {empleado.nombre.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <span className={`text-sm font-medium truncate block ${estaSeleccionado ? 'text-indigo-200' : 'text-slate-300'}`}>
+                        <span className={`text-sm font-medium truncate block ${estaSeleccionado ? 'text-white' : 'text-neutral-300'}`}>
                           {empleado.nombre}
                         </span>
                         {empleado.tarifa_hora && (
-                          <span className="text-[10px] text-slate-500">
+                          <span className="text-[10px] text-neutral-500">
                             ${Number(empleado.tarifa_hora).toLocaleString('es-CL')}/h
                           </span>
                         )}
                       </div>
                     </button>
 
-                    {estaSeleccionado && <UserCheck className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                    {estaSeleccionado && <UserCheck className="w-3.5 h-3.5 text-white shrink-0" />}
 
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 acciones-hover">
                       <button
                         type="button"
                         onClick={() => empezarEdicion(empleado)}
-                        className="p-1.5 rounded-lg hover:bg-slate-700/50 text-slate-500 hover:text-amber-400 transition-colors"
+                        aria-label={`Editar ${empleado.nombre}`}
+                        className="p-2.5 md:p-1.5 rounded-lg hover:bg-neutral-700/50 text-neutral-500 hover:text-amber-400 transition-colors"
                       >
-                        <Pencil size={12} />
+                        <Pencil size={14} className="md:w-3 md:h-3" />
                       </button>
                       <button
                         onClick={() => onEliminarEmpleado(empleado.id)}
                         disabled={estaEliminando}
-                        className="p-1.5 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-colors"
+                        aria-label={`Eliminar ${empleado.nombre}`}
+                        className="p-2.5 md:p-1.5 rounded-lg hover:bg-red-500/10 text-neutral-500 hover:text-red-400 transition-colors"
                       >
                         {estaEliminando ? (
                           <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
@@ -210,9 +212,9 @@ const EmpleadosSidebar = ({
                     />
                     <div className="flex gap-2">
                       <div className="flex-1">
-                        <label className="text-[10px] text-slate-400 font-medium mb-1 block">Tarifa hora normal</label>
+                        <label className="text-[10px] text-neutral-400 font-medium mb-1 block">Tarifa hora normal</label>
                         <div className="relative">
-                          <DollarSign className="w-3 h-3 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" size={12} />
+                          <DollarSign className="w-3 h-3 text-neutral-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" size={12} />
                           <input
                             type="number"
                             value={tarifaHoraEditando}
@@ -225,9 +227,9 @@ const EmpleadosSidebar = ({
                         </div>
                       </div>
                       <div className="flex-1">
-                        <label className="text-[10px] text-slate-400 font-medium mb-1 block">Tarifa hora extra</label>
+                        <label className="text-[10px] text-neutral-400 font-medium mb-1 block">Tarifa hora extra</label>
                         <div className="relative">
-                          <DollarSign className="w-3 h-3 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" size={12} />
+                          <DollarSign className="w-3 h-3 text-neutral-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" size={12} />
                           <input
                             type="number"
                             value={tarifaHoraExtraEditando}

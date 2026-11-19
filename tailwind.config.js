@@ -4,21 +4,15 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        // Geométrica y fina, como el wordmark del logo
+        display: ['Montserrat', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca',
-          800: '#3730a3',
-          900: '#312e81',
-          950: '#1e1b4b',
-        },
+        // Fondo exacto del logo de Basel Venue: el logo se funde con la app sin bordes
+        canvas: '#030708',
+      },
+      letterSpacing: {
+        brand: '0.32em',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
@@ -46,8 +40,8 @@ module.exports = {
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
         glow: {
-          '0%': { boxShadow: '0 0 20px rgba(99,102,241,0.1)' },
-          '100%': { boxShadow: '0 0 40px rgba(99,102,241,0.3)' },
+          '0%': { boxShadow: '0 0 20px rgba(255,255,255,0.03)' },
+          '100%': { boxShadow: '0 0 40px rgba(255,255,255,0.08)' },
         },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
