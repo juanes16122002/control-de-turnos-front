@@ -30,26 +30,26 @@ const TurnoFiltersBar = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <CalendarDays className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+          <div className="relative flex-1 min-w-0 sm:flex-none">
+            <CalendarDays className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
             <input
               id="mes"
               type="month"
               value={mesSeleccionado}
               onChange={(e) => setMesSeleccionado(e.target.value)}
-              className="input input-icon py-1.5 text-xs w-40"
+              className="input input-icon py-1.5 text-xs w-full sm:w-40"
             />
           </div>
         </div>
 
         <div className="relative">
-          <Building2 className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+          <Building2 className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
           <select
             value={empresaFiltro}
             onChange={(e) => setEmpresaFiltro(e.target.value)}
-            className="select py-1.5 text-xs w-40 pl-10"
+            className="select py-1.5 text-xs w-full sm:w-40 pl-10"
           >
             <option value="">Todas las empresas</option>
             {empresas.map((emp) => (
@@ -58,29 +58,31 @@ const TurnoFiltersBar = ({
           </select>
         </div>
 
-        <div className="h-6 w-px bg-slate-700/50 hidden md:block" />
+        <div className="h-6 w-px bg-neutral-700/50 hidden md:block" />
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
             <input
               type="date"
               value={fechaDesdeExport}
               onChange={(e) => setFechaDesdeExport(e.target.value)}
-              className="input py-1.5 text-xs w-36"
+              className="input py-1.5 text-xs w-full sm:w-36 min-w-0 flex-1"
               placeholder="Desde"
+              aria-label="Exportar desde"
             />
-            <span className="text-slate-600 text-xs">a</span>
+            <span className="text-neutral-600 text-xs">a</span>
             <input
               type="date"
               value={fechaHastaExport}
               onChange={(e) => setFechaHastaExport(e.target.value)}
-              className="input py-1.5 text-xs w-36"
+              className="input py-1.5 text-xs w-full sm:w-36 min-w-0 flex-1"
               placeholder="Hasta"
+              aria-label="Exportar hasta"
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={onClickAgregarTurno}
             disabled={!empleadoSeleccionado}
@@ -111,7 +113,7 @@ const TurnoFiltersBar = ({
 
           <button
             onClick={() => setGestionando(!gestionando)}
-            className={`btn-ghost btn-xs ${gestionando ? 'text-indigo-400' : ''}`}
+            className={`btn-ghost btn-xs ${gestionando ? 'text-white' : ''}`}
           >
             <Building2 size={14} />
             Empresas
@@ -122,7 +124,7 @@ const TurnoFiltersBar = ({
       {gestionando && (
         <div className="glass rounded-xl p-4 animate-slide-down">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Gestionar empresas</h3>
+            <h3 className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">Gestionar empresas</h3>
             <button onClick={() => setGestionando(false)} className="btn-ghost btn-xs">
               <X size={12} />
             </button>
@@ -143,10 +145,10 @@ const TurnoFiltersBar = ({
 
           <div className="space-y-1.5 max-h-48 overflow-y-auto">
             {empresas.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-4">No hay empresas registradas</p>
+              <p className="text-xs text-neutral-500 text-center py-4">No hay empresas registradas</p>
             ) : (
               empresas.map((emp) => (
-                <div key={emp.id} className="flex items-center gap-2 bg-slate-800/30 rounded-lg px-3 py-2 border border-slate-700/30">
+                <div key={emp.id} className="flex items-center gap-2 bg-neutral-800/30 rounded-lg px-3 py-2 border border-neutral-700/30">
                   {editandoEmpresaId === emp.id ? (
                     <>
                       <input
@@ -165,7 +167,7 @@ const TurnoFiltersBar = ({
                     </>
                   ) : (
                     <>
-                      <span className="flex-1 text-sm text-slate-300">{emp.nombre}</span>
+                      <span className="flex-1 text-sm text-neutral-300">{emp.nombre}</span>
                       <button
                         onClick={() => { setEditandoEmpresaId(emp.id); setEditandoEmpresaNombre(emp.nombre); }}
                         className="btn-ghost btn-xs text-amber-400"

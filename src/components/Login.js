@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { LogIn, User, Lock, Eye, EyeOff } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import api from '../api';
+import { BrandLogoImage } from './BrandLogo';
 
 const Login = () => {
   const [usuario, setUsuario] = useState('');
@@ -10,6 +11,8 @@ const Login = () => {
   const [cargando, setCargando] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const sesionExpirada = params.get('motivo') === 'expirada';
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -33,27 +36,28 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/40 via-slate-950 to-violet-950/40" />
-      <div className="absolute inset-0 bg-grid opacity-30" />
-      <div className="absolute top-[-20%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/10 blur-[120px]" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-violet-500/10 blur-[120px]" />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-canvas px-4">
+      {/* Fondo plano del color exacto del logo + halo blanco muy tenue */}
+      <div className="absolute inset-0 bg-glow pointer-events-none" />
 
       <div className="relative w-full max-w-sm animate-fade-in">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-2xl shadow-indigo-500/25">
-            <LogIn className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">Bienvenido</h1>
-          <p className="text-sm text-slate-400 mt-1">Inicia sesión para continuar</p>
+        <div className="flex flex-col items-center mb-10">
+          <BrandLogoImage className="w-64 max-w-full" />
+          <span className="w-10 h-px bg-white/20 mt-8 mb-4" aria-hidden="true" />
+          <h1 className="eyebrow text-neutral-400">Control de turnos</h1>
         </div>
 
-        <div className="glass rounded-2xl p-8 shadow-2xl shadow-black/40 animate-slide-up">
+        <div className="glass rounded-xl p-8 shadow-2xl shadow-black/60 animate-slide-up">
+          {sesionExpirada && !error && (
+            <div className="text-sm text-neutral-300 bg-white/[0.04] border border-white/10 rounded-lg px-4 py-2.5 mb-5" role="status">
+              Tu sesión expiró. Inicia sesión nuevamente.
+            </div>
+          )}
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <label className="label" htmlFor="usuario">Usuario</label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+                <User className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
                 <input
                   id="usuario"
                   type="text"
@@ -69,7 +73,7 @@ const Login = () => {
             <div>
               <label className="label" htmlFor="contrasena">Contraseña</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+                <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
                 <input
                   id="contrasena"
                   type={showPass ? 'text' : 'password'}
@@ -82,7 +86,8 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  aria-label={showPass ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2.5 text-neutral-500 hover:text-neutral-300 transition-colors"
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

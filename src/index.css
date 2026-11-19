@@ -1,8 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Identidad Basel Venue: monocromática, minimalista, tipografía geométrica con
+ * mucho espaciado. El blanco es el color de acento (acciones primarias, estado
+ * activo); el verde/ámbar/rojo se reservan para comunicar estado.
+ */
 
 @layer base {
   html {
@@ -10,8 +16,12 @@
   }
 
   body {
-    @apply bg-slate-950 text-slate-100 antialiased;
+    @apply bg-canvas text-neutral-100 antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  ::selection {
+    @apply bg-white text-black;
   }
 
   ::-webkit-scrollbar {
@@ -24,65 +34,100 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-700 rounded-full hover:bg-slate-600;
+    @apply bg-neutral-800 rounded-full hover:bg-neutral-700;
   }
 
   ::-webkit-scrollbar-corner {
     @apply bg-transparent;
   }
+
+  /* Celulares: iOS hace zoom al enfocar campos con letra < 16px. Se fuerza 16px en
+     pantallas angostas (sobrescribe utilidades como text-xs de filtros compactos). */
+  @media (max-width: 639px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Íconos de calendario/reloj de inputs nativos visibles en tema oscuro */
+  input[type='date'],
+  input[type='datetime-local'],
+  input[type='time'],
+  input[type='month'] {
+    color-scheme: dark;
+  }
 }
 
 @layer components {
+  /* --- Tipografía de marca --- */
+  .page-title {
+    @apply font-display text-lg font-normal uppercase tracking-[0.18em] text-white;
+  }
+
+  .eyebrow {
+    @apply font-display text-[10px] font-medium uppercase tracking-brand text-neutral-500;
+  }
+
+  .icon-tile {
+    @apply w-10 h-10 rounded-lg border border-white/10 bg-white/[0.03] flex items-center justify-center shrink-0;
+  }
+
+  /* --- Superficies --- */
   .glass {
-    @apply bg-slate-900/70 backdrop-blur-xl border border-slate-700/50;
+    @apply bg-neutral-950/80 backdrop-blur-xl border border-white/[0.08];
   }
 
   .glass-hover {
-    @apply hover:bg-slate-800/80 hover:border-slate-600/50 transition-all duration-200;
+    @apply hover:bg-neutral-900/80 hover:border-white/15 transition-all duration-200;
   }
 
   .card {
-    @apply glass rounded-2xl shadow-lg shadow-black/20;
+    @apply glass rounded-xl shadow-lg shadow-black/40;
   }
 
   .card-hover {
     @apply card glass-hover;
   }
 
+  /* --- Botones --- */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900;
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
   }
 
+  /* Acción principal: blanco invertido, como el wordmark */
   .btn-primary {
-    @apply btn bg-indigo-600 hover:bg-indigo-500 text-white hover:shadow-lg hover:shadow-indigo-500/25 active:scale-[0.98] focus:ring-indigo-500;
+    @apply btn bg-white text-black hover:bg-neutral-200 active:scale-[0.98] focus-visible:ring-white/60;
   }
 
   .btn-secondary {
-    @apply btn bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700/50 hover:border-slate-600 active:scale-[0.98] focus:ring-slate-500;
+    @apply btn bg-transparent text-neutral-200 border border-white/15 hover:border-white/30 hover:bg-white/[0.04] active:scale-[0.98] focus-visible:ring-white/40;
   }
 
   .btn-success {
-    @apply btn bg-emerald-600 hover:bg-emerald-500 text-white hover:shadow-lg hover:shadow-emerald-500/25 active:scale-[0.98] focus:ring-emerald-500;
+    @apply btn bg-emerald-600 hover:bg-emerald-500 text-white active:scale-[0.98] focus-visible:ring-emerald-500;
   }
 
   .btn-danger {
-    @apply btn bg-red-600 hover:bg-red-500 text-white hover:shadow-lg hover:shadow-red-500/25 active:scale-[0.98] focus:ring-red-500;
+    @apply btn bg-red-600 hover:bg-red-500 text-white active:scale-[0.98] focus-visible:ring-red-500;
   }
 
   .btn-ghost {
-    @apply btn bg-transparent hover:bg-slate-800/60 text-slate-300 hover:text-white active:scale-[0.98] focus:ring-slate-500;
+    @apply btn bg-transparent hover:bg-white/[0.06] text-neutral-300 hover:text-white active:scale-[0.98] focus-visible:ring-white/30;
   }
 
   .btn-xs {
-    @apply px-2.5 py-1 rounded-lg text-xs;
+    @apply px-2.5 py-1 rounded-md text-xs;
   }
 
   .btn-sm {
-    @apply px-3 py-1.5 rounded-lg text-xs;
+    @apply px-3 py-1.5 rounded-md text-xs;
   }
 
+  /* --- Formularios --- */
   .input {
-    @apply w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/60 text-slate-100 placeholder-slate-500 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50;
+    @apply w-full px-3 py-2 rounded-lg bg-black/40 border border-white/10 text-neutral-100 placeholder-neutral-600 text-sm transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-white/40 focus:border-white/40;
   }
 
   .input-icon {
@@ -90,23 +135,29 @@
   }
 
   .label {
-    @apply block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider;
+    @apply block font-display text-[10px] font-medium text-neutral-400 mb-1.5 uppercase tracking-[0.2em];
   }
 
   .select {
     @apply input appearance-none cursor-pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a3a3a3' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     padding-right: 2rem;
   }
 
+  .select option {
+    @apply bg-neutral-900 text-neutral-100;
+  }
+
+  /* --- Badges --- */
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
 
-  .badge-blue {
-    @apply badge bg-indigo-500/15 text-indigo-300 border border-indigo-500/20;
+  /* Neutro de marca (antes azul/índigo) */
+  .badge-brand {
+    @apply badge bg-white/[0.08] text-neutral-100 border border-white/15;
   }
 
   .badge-emerald {
@@ -122,34 +173,93 @@
   }
 
   .skeleton {
-    @apply bg-slate-800/60 rounded-lg animate-pulse;
+    @apply bg-white/[0.05] rounded-lg animate-pulse;
+  }
+
+  /* Pantallas táctiles: objetivos de al menos ~40-44px (guía de Apple/Google) */
+  @media (pointer: coarse) {
+    .btn,
+    .input,
+    .select {
+      min-height: 2.75rem;
+    }
+
+    .btn-xs,
+    .btn-sm {
+      min-height: 2.5rem;
+      min-width: 2.5rem;
+    }
   }
 }
 
 @layer utilities {
+  /* Acciones que en escritorio aparecen al pasar el mouse por la fila (.group).
+     En pantallas táctiles (sin hover) quedan SIEMPRE visibles; con teclado, al enfocar. */
+  @media (hover: hover) and (pointer: fine) {
+    .acciones-hover {
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .group:hover .acciones-hover,
+    .acciones-hover:focus-within {
+      opacity: 1;
+    }
+  }
+
+  /* Respeta el notch / barra de gestos en celulares (requiere viewport-fit=cover) */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400;
+    @apply text-white;
   }
 
   .bg-grid {
     background-image:
-      linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
+      linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    background-size: 48px 48px;
   }
 
   .bg-glow {
-    background: radial-gradient(ellipse at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+    background: radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
   }
 
   .animate-shimmer {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(99, 102, 241, 0.05) 50%,
+      rgba(255, 255, 255, 0.04) 50%,
       transparent 100%
     );
     background-size: 200% 100%;
     animation: shimmer 2s linear infinite;
+  }
+}
+
+/* --- Impresión: solo se imprime el cartel (portal .print-area fuera de #root) --- */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  #root {
+    display: none !important;
+  }
+
+  .print-area {
+    display: block !important;
   }
 }

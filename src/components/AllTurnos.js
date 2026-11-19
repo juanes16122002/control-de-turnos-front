@@ -172,24 +172,24 @@ const AllTurnos = () => {
   const puedeExportar = turnos.length > 0;
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-white">Todos los turnos</h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <h1 className="page-title">Todos los turnos</h1>
+          <p className="text-sm text-neutral-400 mt-0.5">
             Visualiza los turnos de todos los empleados, filtra y exporta
           </p>
         </div>
       </div>
 
       <div className="card p-4">
-        <div className="flex flex-wrap items-end gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-end">
           <div className="relative">
-            <User className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            <User className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
             <select
               value={empleadoFiltro}
               onChange={(e) => setEmpleadoFiltro(e.target.value)}
-              className="select py-1.5 text-xs w-44 pl-10"
+              className="select py-1.5 text-xs w-full sm:w-44 pl-10"
             >
               <option value="">Todos los empleados</option>
               {empleados.map((emp) => (
@@ -199,11 +199,11 @@ const AllTurnos = () => {
           </div>
 
           <div className="relative">
-            <Building2 className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            <Building2 className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
             <select
               value={empresaFiltro}
               onChange={(e) => setEmpresaFiltro(e.target.value)}
-              className="select py-1.5 text-xs w-44 pl-10"
+              className="select py-1.5 text-xs w-full sm:w-44 pl-10"
             >
               <option value="">Todas las empresas</option>
               {empresas.map((emp) => (
@@ -213,24 +213,24 @@ const AllTurnos = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <CalendarDays className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            <div className="relative flex-1 min-w-0 sm:flex-none">
+              <CalendarDays className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
               <input
                 type="date"
                 value={fechaDesde}
                 onChange={(e) => setFechaDesde(e.target.value)}
-                className="input py-1.5 text-xs w-36 pl-10"
+                className="input py-1.5 text-xs w-full min-w-0 sm:w-36 pl-10"
                 placeholder="Desde"
               />
             </div>
-            <span className="text-slate-600 text-xs">a</span>
-            <div className="relative">
-              <CalendarDays className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
+            <span className="text-neutral-600 text-xs">a</span>
+            <div className="relative flex-1 min-w-0 sm:flex-none">
+              <CalendarDays className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
               <input
                 type="date"
                 value={fechaHasta}
                 onChange={(e) => setFechaHasta(e.target.value)}
-                className="input py-1.5 text-xs w-36 pl-10"
+                className="input py-1.5 text-xs w-full min-w-0 sm:w-36 pl-10"
                 placeholder="Hasta"
               />
             </div>
@@ -251,7 +251,7 @@ const AllTurnos = () => {
             {cargando ? 'Buscando...' : 'Buscar'}
           </button>
 
-          <div className="flex gap-2 ml-auto">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:ml-auto">
             <button
               onClick={() => handleExport('excel')}
               disabled={!puedeExportar || exportando}
@@ -288,16 +288,17 @@ const AllTurnos = () => {
           </div>
         ) : turnos.length === 0 ? (
           <div className="text-center py-12 animate-fade-in">
-            <Search className="w-12 h-12 text-slate-700 mx-auto mb-3" />
-            <p className="text-sm text-slate-500">No hay turnos para los filtros seleccionados</p>
+            <Search className="w-12 h-12 text-neutral-700 mx-auto mb-3" />
+            <p className="text-sm text-neutral-500">No hay turnos para los filtros seleccionados</p>
           </div>
         ) : (
           <>
+            <p className="sm:hidden text-[11px] text-neutral-500 px-4 pt-3" aria-hidden="true">Desliza la tabla hacia los lados para ver todas las columnas →</p>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="bg-slate-800/40 text-slate-400 text-xs uppercase tracking-wider">
-                    <th className="text-left font-medium py-3 px-4">Empleado</th>
+                  <tr className="bg-neutral-800/40 text-neutral-400 text-xs uppercase tracking-wider">
+                    <th className="text-left font-medium py-3 px-4 sticky left-0 z-10 bg-neutral-900">Empleado</th>
                     <th className="text-left font-medium py-3 px-4">Fecha</th>
                     <th className="text-left font-medium py-3 px-4">Empresa</th>
                     <th className="text-left font-medium py-3 px-4">Evento</th>
@@ -311,30 +312,30 @@ const AllTurnos = () => {
                     <th className="text-right font-medium py-3 px-4">Total turno</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/40">
+                <tbody className="divide-y divide-neutral-800/40">
                   {turnos.map((t, idx) => {
                     const v = calcularValoresTurno(t);
                     return (
                       <tr
                         key={t.id}
-                        className="group hover:bg-slate-800/20 transition-colors animate-fade-in"
+                        className="group hover:bg-neutral-800/20 transition-colors animate-fade-in"
                         style={{ animationDelay: `${idx * 20}ms` }}
                       >
-                        <td className="py-2.5 px-4">
-                          <span className="badge-blue">{t.empleado_nombre || '-'}</span>
+                        <td className="py-2.5 px-4 sticky left-0 z-10 bg-neutral-950 group-hover:bg-neutral-900">
+                          <span className="badge-brand whitespace-nowrap">{t.empleado_nombre || '-'}</span>
                         </td>
-                        <td className="py-2.5 px-4 text-slate-200 whitespace-nowrap">{t.fecha || '-'}</td>
-                        <td className="py-2.5 px-4 text-slate-300 whitespace-nowrap">
-                          {t.empresa_nombre || <span className="text-slate-500">Sin empresa</span>}
+                        <td className="py-2.5 px-4 text-neutral-200 whitespace-nowrap">{t.fecha || '-'}</td>
+                        <td className="py-2.5 px-4 text-neutral-300 whitespace-nowrap">
+                          {t.empresa_nombre || <span className="text-neutral-500">Sin empresa</span>}
                         </td>
-                        <td className="py-2.5 px-4 text-slate-300 whitespace-nowrap">{t.nombre_evento || '-'}</td>
-                        <td className="py-2.5 px-4 text-slate-300 whitespace-nowrap">{t.area || '-'}</td>
-                        <td className="py-2.5 px-4 text-slate-300 font-mono text-xs whitespace-nowrap">
+                        <td className="py-2.5 px-4 text-neutral-300 whitespace-nowrap">{t.nombre_evento || '-'}</td>
+                        <td className="py-2.5 px-4 text-neutral-300 whitespace-nowrap">{t.area || '-'}</td>
+                        <td className="py-2.5 px-4 text-neutral-300 font-mono text-xs whitespace-nowrap">
                           {t.hora_entrada
                             ? new Date(t.hora_entrada).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : '-'}
                         </td>
-                        <td className="py-2.5 px-4 text-slate-300 font-mono text-xs whitespace-nowrap">
+                        <td className="py-2.5 px-4 text-neutral-300 font-mono text-xs whitespace-nowrap">
                           {t.hora_salida
                             ? new Date(t.hora_salida).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : '-'}
@@ -343,7 +344,7 @@ const AllTurnos = () => {
                         <td className="py-2.5 px-4 text-right whitespace-nowrap">
                           {v.horasExtra ? <span className="text-amber-400">{v.horasExtra.toFixed(2)}</span> : '-'}
                         </td>
-                        <td className="py-2.5 px-4 text-right whitespace-nowrap text-slate-400">{formatearMoneda(v.valorExtra)}</td>
+                        <td className="py-2.5 px-4 text-right whitespace-nowrap text-neutral-400">{formatearMoneda(v.valorExtra)}</td>
                         <td className="py-2.5 px-4 text-right whitespace-nowrap">{formatearMoneda(v.valorFijo)}</td>
                         <td className="py-2.5 px-4 text-right whitespace-nowrap font-semibold">{formatearMoneda(v.sueldoTotal)}</td>
                       </tr>
@@ -353,12 +354,12 @@ const AllTurnos = () => {
               </table>
             </div>
 
-            <div className="grid gap-3 grid-cols-2 md:grid-cols-5 p-4 border-t border-slate-800/50 bg-slate-900/40">
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-5 p-4 border-t border-neutral-800/50 bg-neutral-900/40">
               {[
-                { label: 'Horas trabajadas', value: (totales.horasTrabajadas || 0).toFixed(2), icon: Clock, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
+                { label: 'Horas trabajadas', value: (totales.horasTrabajadas || 0).toFixed(2), icon: Clock, color: 'text-white', bg: 'bg-white/[0.06]' },
                 { label: 'Horas extra', value: (totales.horasExtra || 0).toFixed(2), icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10' },
                 { label: 'Valor horas extra', value: formatearMoneda(totales.valorHorasExtra), icon: DollarSign, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-                { label: 'Valor fijo', value: formatearMoneda(totales.valorFijo), icon: Briefcase, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                { label: 'Valor fijo', value: formatearMoneda(totales.valorFijo), icon: Briefcase, color: 'text-neutral-300', bg: 'bg-white/[0.04]' },
                 { label: 'Sueldo total', value: formatearMoneda(totales.sueldo), icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
               ].map((stat) => {
                 const Icon = stat.icon;
@@ -367,15 +368,15 @@ const AllTurnos = () => {
                     <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center mx-auto mb-2`}>
                       <Icon className={`w-4 h-4 ${stat.color}`} />
                     </div>
-                    <p className="text-[11px] text-slate-500 uppercase tracking-wider mb-0.5">{stat.label}</p>
+                    <p className="text-[11px] text-neutral-500 uppercase tracking-wider mb-0.5">{stat.label}</p>
                     <p className={`text-sm font-bold ${stat.color}`}>{stat.value}</p>
                   </div>
                 );
               })}
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 border-t border-slate-800/50">
-              <p className="text-xs text-slate-500">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 border-t border-neutral-800/50">
+              <p className="text-xs text-neutral-500">
                 Mostrando {turnos.length} de {total} turno{total !== 1 ? 's' : ''}
               </p>
               <div className="flex items-center gap-2">
@@ -386,7 +387,7 @@ const AllTurnos = () => {
                 >
                   Anterior
                 </button>
-                <span className="text-xs text-slate-400 whitespace-nowrap">
+                <span className="text-xs text-neutral-400 whitespace-nowrap">
                   Página {page} de {totalPages}
                 </span>
                 <button
