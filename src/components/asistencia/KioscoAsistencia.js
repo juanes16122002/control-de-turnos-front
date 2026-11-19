@@ -51,11 +51,14 @@ const KioscoAsistencia = () => {
   const [cuentaAtras, setCuentaAtras] = useState(SEGUNDOS_RESULTADO);
   const [geocercaActiva, setGeocercaActiva] = useState(false);
   const [geo, setGeo] = useState(GEO_INICIAL);
+  // El servidor tarda en responder (p. ej. despertando en el plan gratuito)
+  const [servidorLento, setServidorLento] = useState(false);
 
   const ultimaActividad = useRef(Date.now());
   const registrarActividad = () => { ultimaActividad.current = Date.now(); };
 
   const cargarEmpleados = useCallback(async () => {
+    const aviso = setTimeout(() => setServidorLento(true), 4000);
     try {
       setErrorCarga('');
       const [resEmp, resConfig] = await Promise.all([
@@ -67,6 +70,8 @@ const KioscoAsistencia = () => {
     } catch (err) {
       setErrorCarga('No se pudo conectar con el servidor. Reintentando…');
     } finally {
+      clearTimeout(aviso);
+      setServidorLento(false);
       setCargando(false);
     }
   }, []);
@@ -159,7 +164,9 @@ const KioscoAsistencia = () => {
         }
         ubicacion = { lat: pos.lat, lng: pos.lng, precision_m: pos.precision_m };
       }
-      const res = await kioscoApi.post('/kiosco/marcar', { empleado_id: seleccionado.id, pin, tipo, ubicacion });
+      const aviso = setTimeout(() => setServidorLento(true), 4000);
+      const res = await kioscoApi.post('/kiosco/marcar', { empleado_id: seleccionado.id, pin, tipo, ubicacion })
+        .finally(() => { clearTimeout(aviso); setServidorLento(false); });
       setResultado(res.data);
     } catch (err) {
       setError(mensajeError(err, err.code === 'ECONNABORTED' || !err.response
@@ -329,7 +336,11 @@ const KioscoAsistencia = () => {
             <LogOut size={20} /> Salida
           </button>
         </div>
-        {enviando && <p className="text-center text-xs text-neutral-500 mt-3">Registrando…</p>}
+        {enviando && (
+          <p className="text-center text-xs text-neutral-500 mt-3" role="status">
+            {servidorLento ? 'El servidor se está iniciando, puede tardar hasta un minuto…' : 'Registrando…'}
+          </p>
+        )}
       </div>
     );
   }
@@ -354,6 +365,11 @@ const KioscoAsistencia = () => {
         />
       </div>
 
+      {cargando && servidorLento && (
+        <p className="text-center text-sm text-neutral-400 mb-4 flex items-center justify-center gap-2" role="status">
+          <RefreshCw size={14} className="animate-spin" /> Iniciando el servidor, puede tardar hasta un minuto…
+        </p>
+      )}
       {cargando ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className="skeleton h-16 rounded-2xl" />)}

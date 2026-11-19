@@ -5,7 +5,8 @@ import axios from 'axios';
 // y en el kiosco un 401 significa "PIN incorrecto".
 const kioscoApi = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
-  timeout: 15000,
+  // Holgado: en el plan gratuito de Render el servidor puede tardar ~1 min en despertar
+  timeout: 75000,
 });
 
 export default kioscoApi;
