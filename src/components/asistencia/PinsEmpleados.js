@@ -59,12 +59,12 @@ const PinsEmpleados = ({ empleados, onCambio, onError }) => {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-neutral-400">
-          <span className="text-white font-semibold">{conPin}</span> de {empleados.length} trabajadores pueden marcar en el kiosco.
+          <span className="text-white font-semibold">{conPin}</span> de {empleados.length} técnicos pueden marcar en el kiosco.
           Solo quienes tienen PIN aparecen en él.
         </p>
         <div className="relative">
           <Search size={14} className="text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input className="input py-1.5 text-xs pl-9 w-56" placeholder="Buscar empleado" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <input className="input py-1.5 text-xs pl-9 w-56" placeholder="Buscar técnico" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
         </div>
       </div>
 

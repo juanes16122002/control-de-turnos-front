@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { CalendarPlus, ClipboardList, LogOut, LayoutDashboard, Fingerprint, Menu, X } from 'lucide-react';
+import { Building2, CalendarPlus, CalendarRange, ClipboardList, HardHat, LogOut, LayoutDashboard, Fingerprint, Menu, X } from 'lucide-react';
 
 import Login from './components/Login';
 import Home from './Home';
@@ -8,6 +8,9 @@ import AllTurnos from './components/AllTurnos';
 import Dashboard from './components/Dashboard';
 import ProtectedRoute, { olvidarVerificacion } from './components/ProtectedRoute';
 import AsistenciasAdmin from './components/asistencia/AsistenciasAdmin';
+import EventosAdmin from './components/eventos/EventosAdmin';
+import EmpresasAdmin from './components/empresas/EmpresasAdmin';
+import TecnicosAdmin from './components/tecnicos/TecnicosAdmin';
 import KioscoAsistencia from './components/asistencia/KioscoAsistencia';
 import BrandLogo from './components/BrandLogo';
 import api from './api';
@@ -16,6 +19,9 @@ const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/home', label: 'Agregar turno', icon: CalendarPlus },
   { path: '/turnos', label: 'Todos los turnos', icon: ClipboardList },
+  { path: '/eventos', label: 'Eventos', icon: CalendarRange },
+  { path: '/tecnicos', label: 'Técnicos', icon: HardHat },
+  { path: '/empresas', label: 'Empresas', icon: Building2 },
   { path: '/asistencias', label: 'Asistencia', icon: Fingerprint },
 ];
 
@@ -209,6 +215,9 @@ const App = () => (
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/home" element={<Home />} />
         <Route path="/turnos" element={<AllTurnos />} />
+        <Route path="/eventos" element={<EventosAdmin />} />
+        <Route path="/empresas" element={<EmpresasAdmin />} />
+        <Route path="/tecnicos" element={<TecnicosAdmin />} />
         <Route path="/asistencias" element={<AsistenciasAdmin />} />
       </Route>
 

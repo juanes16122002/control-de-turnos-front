@@ -56,7 +56,7 @@ const AllTurnos = () => {
         setEmpresas(resEmpresas.data);
       } catch (err) {
         console.error(err);
-        setError('No se pudieron cargar empleados/empresas');
+        setError('No se pudieron cargar técnicos/empresas');
       }
     };
 
@@ -177,7 +177,7 @@ const AllTurnos = () => {
         <div>
           <h1 className="page-title">Todos los turnos</h1>
           <p className="text-sm text-neutral-400 mt-0.5">
-            Visualiza los turnos de todos los empleados, filtra y exporta
+            Visualiza los turnos de todos los técnicos, filtra y exporta
           </p>
         </div>
       </div>
@@ -191,7 +191,7 @@ const AllTurnos = () => {
               onChange={(e) => setEmpleadoFiltro(e.target.value)}
               className="select py-1.5 text-xs w-full sm:w-44 pl-10"
             >
-              <option value="">Todos los empleados</option>
+              <option value="">Todos los técnicos</option>
               {empleados.map((emp) => (
                 <option key={emp.id} value={emp.id}>{emp.nombre}</option>
               ))}
@@ -298,7 +298,7 @@ const AllTurnos = () => {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="bg-neutral-800/40 text-neutral-400 text-xs uppercase tracking-wider">
-                    <th className="text-left font-medium py-3 px-4 sticky left-0 z-10 bg-neutral-900">Empleado</th>
+                    <th className="text-left font-medium py-3 px-4 sticky left-0 z-10 bg-neutral-900">Técnico</th>
                     <th className="text-left font-medium py-3 px-4">Fecha</th>
                     <th className="text-left font-medium py-3 px-4">Empresa</th>
                     <th className="text-left font-medium py-3 px-4">Evento</th>

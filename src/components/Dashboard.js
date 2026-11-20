@@ -76,7 +76,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <StatCard icon={Users} label="Empleados" value={data.totalEmpleados} color="text-white" bg="bg-white/[0.06]" />
+        <StatCard icon={Users} label="Técnicos" value={data.totalEmpleados} color="text-white" bg="bg-white/[0.06]" />
         <StatCard icon={Building2} label="Empresas" value={data.totalEmpresas} color="text-neutral-300" bg="bg-white/[0.04]" />
         <StatCard icon={CalendarDays} label="Total turnos" value={data.totalTurnos} color="text-neutral-300" bg="bg-white/[0.04]" />
         <StatCard icon={Clock} label="Turnos este mes" value={data.turnosEsteMes} color="text-emerald-400" bg="bg-emerald-500/10" />
@@ -88,7 +88,7 @@ const Dashboard = () => {
         <div className="card p-5">
           <h2 className="text-sm font-semibold text-neutral-200 mb-4 flex items-center gap-2">
             <UserCheck className="w-4 h-4 text-white" />
-            Top empleados del mes
+            Top técnicos del mes
           </h2>
           {data.topEmpleados.filter(e => e.total_turnos > 0).length === 0 ? (
             <p className="text-sm text-neutral-500">Sin datos este mes</p>
@@ -150,7 +150,7 @@ const Dashboard = () => {
               <thead>
                 <tr className="text-neutral-400 text-xs uppercase tracking-wider border-b border-neutral-800/50">
                   <th className="text-left font-medium py-2 pr-4">Fecha</th>
-                  <th className="text-left font-medium py-2 pr-4">Empleado</th>
+                  <th className="text-left font-medium py-2 pr-4">Técnico</th>
                   <th className="text-left font-medium py-2 pr-4 hidden sm:table-cell">Evento</th>
                   <th className="text-left font-medium py-2 pr-4 hidden md:table-cell">Empresa</th>
                   <th className="text-right font-medium py-2 pr-4">Horas</th>

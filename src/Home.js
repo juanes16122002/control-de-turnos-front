@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api from './api';
+import { mensajeError } from './helpers/asistencia';
 
 import EmpleadosSidebar from './components/EmpleadosSidebar';
 import TurnoFiltersBar from './components/TurnoFiltersBar';
@@ -8,6 +10,9 @@ import TurnosTable from './components/TurnosTable';
 import { AlertCircle, CalendarDays } from 'lucide-react';
 
 const Home = () => {
+  // "Turnos" desde la sección Técnicos llega con ?tecnico=ID: se abre con ese técnico seleccionado
+  const [searchParams] = useSearchParams();
+  const tecnicoInicial = Number(searchParams.get('tecnico')) || null;
   const [empleados, setEmpleados] = useState([]);
   const [empleadoSeleccionado, setEmpleadoSeleccionado] = useState(null);
   const [turnos, setTurnos] = useState([]);
@@ -28,8 +33,6 @@ const Home = () => {
   const [cargandoNuevo, setCargandoNuevo] = useState(false);
   const [cargandoTurnoNuevo, setCargandoTurnoNuevo] = useState(false);
   const [turnoEliminandoId, setTurnoEliminandoId] = useState(null);
-  const [empleadoEliminandoId, setEmpleadoEliminandoId] = useState(null);
-  const [empleadoRenombrandoId, setEmpleadoRenombrandoId] = useState(null);
 
   const [mostrandoFormEmpleado, setMostrandoFormEmpleado] = useState(false);
   const [mostrandoFormTurno, setMostrandoFormTurno] = useState(false);
@@ -55,10 +58,6 @@ const Home = () => {
 
   const [turnoEditando, setTurnoEditando] = useState(null);
 
-  const [nuevaEmpresa, setNuevaEmpresa] = useState('');
-  const [editandoEmpresaId, setEditandoEmpresaId] = useState(null);
-  const [editandoEmpresaNombre, setEditandoEmpresaNombre] = useState('');
-
   // Carga inicial
   useEffect(() => {
     const fetchEmpleados = async () => {
@@ -68,17 +67,17 @@ const Home = () => {
         const res = await api.get('/empleados');
         setEmpleados(res.data);
         if (res.data.length > 0) {
-          setEmpleadoSeleccionado(res.data[0]);
+          setEmpleadoSeleccionado(res.data.find((e) => e.id === tecnicoInicial) || res.data[0]);
         }
       } catch (err) {
         console.error(err);
-        setError('No se pudieron cargar los empleados');
+        setError('No se pudieron cargar los técnicos');
       } finally {
         setCargandoEmpleados(false);
       }
     };
     fetchEmpleados();
-  }, []);
+  }, [tecnicoInicial]);
 
   useEffect(() => {
     const fetchEmpresas = async () => {
@@ -109,55 +108,13 @@ const Home = () => {
         setTurnos(res.data);
       } catch (err) {
         console.error(err);
-        setError('No se pudieron cargar los turnos del empleado');
+        setError('No se pudieron cargar los turnos del técnico');
       } finally {
         setCargandoTurnos(false);
       }
     };
     fetchTurnos();
   }, [empleadoSeleccionado, mesSeleccionado, empresaFiltro]);
-
-  // Handlers empresas
-  const handleCrearEmpresa = async (e) => {
-    e.preventDefault();
-    if (!nuevaEmpresa.trim()) return;
-    try {
-      const res = await api.post('/empresas', { nombre: nuevaEmpresa.trim() });
-      setEmpresas((prev) => [...prev, res.data].sort((a, b) => a.nombre.localeCompare(b.nombre)));
-      setNuevaEmpresa('');
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo crear la empresa');
-    }
-  };
-
-  const handleRenombrarEmpresa = async (id) => {
-    if (!editandoEmpresaNombre.trim()) return;
-    try {
-      setEditandoEmpresaId(id);
-      await api.put(`/empresas/${id}`, { nombre: editandoEmpresaNombre.trim() });
-      setEmpresas((prev) =>
-        prev.map((e) => (e.id === id ? { ...e, nombre: editandoEmpresaNombre.trim() } : e)).sort((a, b) => a.nombre.localeCompare(b.nombre))
-      );
-      setEditandoEmpresaId(null);
-      setEditandoEmpresaNombre('');
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo renombrar la empresa');
-    }
-  };
-
-  const handleEliminarEmpresa = async (id) => {
-    if (!window.confirm('¿Seguro que deseas eliminar esta empresa?')) return;
-    try {
-      await api.delete(`/empresas/${id}`);
-      setEmpresas((prev) => prev.filter((e) => e.id !== id));
-      if (empresaFiltro === String(id)) setEmpresaFiltro('');
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo eliminar la empresa');
-    }
-  };
 
   // Handlers empleados
   const handleCrearEmpleado = async (e) => {
@@ -174,81 +131,16 @@ const Home = () => {
       setMostrandoFormEmpleado(false);
     } catch (err) {
       console.error(err);
-      setError('No se pudo crear el empleado');
+      setError(mensajeError(err, 'No se pudo crear el técnico'));
     } finally {
       setCargandoNuevo(false);
-    }
-  };
-
-  const handleEliminarEmpleado = async (id) => {
-    if (!window.confirm('¿Seguro que deseas eliminar este empleado y todos sus turnos?')) return;
-    try {
-      setEmpleadoEliminandoId(id);
-      setError('');
-      await api.delete(`/empleados/${id}`);
-      const nuevos = empleados.filter((e) => e.id !== id);
-      setEmpleados(nuevos);
-      if (empleadoSeleccionado?.id === id) {
-        if (nuevos.length > 0) {
-          setEmpleadoSeleccionado(nuevos[0]);
-        } else {
-          setEmpleadoSeleccionado(null);
-          setTurnos([]);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo eliminar el empleado');
-    } finally {
-      setEmpleadoEliminandoId(null);
-    }
-  };
-
-  const handleRenombrarEmpleado = async (id, nuevoNombreEmpleado) => {
-    if (!nuevoNombreEmpleado.trim()) return;
-    try {
-      setEmpleadoRenombrandoId(id);
-      setError('');
-      await api.put(`/empleados/${id}`, { nombre: nuevoNombreEmpleado.trim() });
-      setEmpleados((prev) =>
-        [...prev]
-          .map((e) => (e.id === id ? { ...e, nombre: nuevoNombreEmpleado.trim() } : e))
-          .sort((a, b) => a.nombre.localeCompare(b.nombre))
-      );
-      if (empleadoSeleccionado?.id === id) {
-        setEmpleadoSeleccionado((prev) => ({ ...prev, nombre: nuevoNombreEmpleado.trim() }));
-      }
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo editar el nombre del empleado');
-    } finally {
-      setEmpleadoRenombrandoId(null);
-    }
-  };
-
-  const handleActualizarEmpleado = async (id, data) => {
-    try {
-      setError('');
-      const res = await api.put(`/empleados/${id}`, data);
-      const updated = res.data;
-      setEmpleados((prev) =>
-        [...prev]
-          .map((e) => (e.id === id ? { ...e, ...updated } : e))
-          .sort((a, b) => a.nombre.localeCompare(b.nombre))
-      );
-      if (empleadoSeleccionado?.id === id) {
-        setEmpleadoSeleccionado((prev) => ({ ...prev, ...updated }));
-      }
-    } catch (err) {
-      console.error(err);
-      setError('No se pudo actualizar el empleado');
     }
   };
 
   // Handlers turnos
   const handleGuardarTurno = async (e) => {
     e.preventDefault();
-    if (!empleadoSeleccionado) { setError('Selecciona un empleado antes de agregar un turno'); return; }
+    if (!empleadoSeleccionado) { setError('Selecciona un técnico antes de agregar un turno'); return; }
     if (!fechaTurno || !horaEntradaTurno) { setError('La fecha y la hora de entrada son obligatorias'); return; }
     if (!empresaTurno) { setError('La empresa es obligatoria para el turno'); return; }
     if (!nombreEvento.trim()) { setError('El nombre del evento es obligatorio'); return; }
@@ -362,7 +254,7 @@ const Home = () => {
   };
 
   const handleExportExcel = async () => {
-    if (!empleadoSeleccionado) { setError('Selecciona un empleado antes de exportar'); return; }
+    if (!empleadoSeleccionado) { setError('Selecciona un técnico antes de exportar'); return; }
     if (!validarRangoExport()) return;
     try {
       setError('');
@@ -388,7 +280,7 @@ const Home = () => {
   };
 
   const handleExportPDF = async () => {
-    if (!empleadoSeleccionado) { setError('Selecciona un empleado antes de exportar'); return; }
+    if (!empleadoSeleccionado) { setError('Selecciona un técnico antes de exportar'); return; }
     if (!validarRangoExport()) return;
     try {
       setError('');
@@ -428,11 +320,6 @@ const Home = () => {
         cargandoNuevo={cargandoNuevo}
         onCrearEmpleado={handleCrearEmpleado}
         onSelectEmpleado={setEmpleadoSeleccionado}
-        onEliminarEmpleado={handleEliminarEmpleado}
-        empleadoEliminandoId={empleadoEliminandoId}
-        onRenombrarEmpleado={handleRenombrarEmpleado}
-        empleadoRenombrandoId={empleadoRenombrandoId}
-        onActualizarEmpleado={handleActualizarEmpleado}
       />
 
       <main className="flex-1 min-w-0 p-4 sm:p-6">
@@ -444,12 +331,12 @@ const Home = () => {
               </div>
               <div>
                 <h1 className="page-title">
-                  {empleadoSeleccionado ? `Turnos de ${empleadoSeleccionado.nombre}` : 'Selecciona un empleado'}
+                  {empleadoSeleccionado ? `Turnos de ${empleadoSeleccionado.nombre}` : 'Selecciona un técnico'}
                 </h1>
                 <p className="text-xs text-neutral-500">
                   {empleadoSeleccionado
                     ? `${turnos.length} turno${turnos.length !== 1 ? 's' : ''} en el periodo`
-                    : 'Elige un empleado de la lista lateral'}
+                    : 'Elige un técnico de la lista lateral'}
                 </p>
               </div>
             </div>
@@ -474,15 +361,6 @@ const Home = () => {
             onExportExcel={handleExportExcel}
             onExportPDF={handleExportPDF}
             puedeExportar={puedeExportar}
-            nuevaEmpresa={nuevaEmpresa}
-            setNuevaEmpresa={setNuevaEmpresa}
-            editandoEmpresaId={editandoEmpresaId}
-            setEditandoEmpresaId={setEditandoEmpresaId}
-            editandoEmpresaNombre={editandoEmpresaNombre}
-            setEditandoEmpresaNombre={setEditandoEmpresaNombre}
-            onCrearEmpresa={handleCrearEmpresa}
-            onRenombrarEmpresa={handleRenombrarEmpresa}
-            onEliminarEmpresa={handleEliminarEmpresa}
           />
 
           {mostrandoFormTurno && (
@@ -490,6 +368,7 @@ const Home = () => {
               empresas={empresas}
               empresaTurno={empresaTurno}
               setEmpresaTurno={setEmpresaTurno}
+              onEmpresaCreada={(emp) => setEmpresas((prev) => [...prev, emp].sort((a, b) => a.nombre.localeCompare(b.nombre)))}
               fechaTurno={fechaTurno}
               setFechaTurno={setFechaTurno}
               horaEntradaTurno={horaEntradaTurno}
