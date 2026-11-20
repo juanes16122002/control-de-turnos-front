@@ -231,6 +231,11 @@ const KioscoAsistencia = () => {
             {formatearHoraCorta(esEntrada ? a.entrada : a.salida)}
           </span>
         </p>
+        {a.evento_nombre && (
+          <p className="text-neutral-400 mt-2">
+            Evento: <span className="font-semibold text-white">{a.evento_nombre}</span>
+          </p>
+        )}
         {!esEntrada && (
           <p className="text-neutral-400 mt-2">
             Tiempo trabajado: <span className="font-semibold text-white">{formatearDuracion(a.horas)}</span>
@@ -361,7 +366,7 @@ const KioscoAsistencia = () => {
           onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Busca tu nombre"
           className="input pl-11 py-3 text-base"
-          aria-label="Buscar empleado"
+          aria-label="Buscar técnico"
         />
       </div>
 
@@ -377,7 +382,7 @@ const KioscoAsistencia = () => {
       ) : filtrados.length === 0 ? (
         <p className="text-center text-neutral-500 py-10">
           {empleados.length === 0
-            ? 'Aún no hay trabajadores habilitados. El administrador debe asignar un PIN a cada trabajador.'
+            ? 'Aún no hay técnicos habilitados. El administrador debe asignar un PIN a cada técnico.'
             : 'No se encontró ese nombre.'}
         </p>
       ) : (

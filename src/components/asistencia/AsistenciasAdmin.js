@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Fingerprint, UserCheck, Clock, ExternalLink, Plus, RefreshCw, FileSpreadsheet, Search,
   Pencil, Trash2, ArrowRightLeft, LogOut, TriangleAlert, CircleAlert, ChevronLeft, ChevronRight,
-  MessageSquare, KeyRound, ClipboardList, MapPin, QrCode,
+  MessageSquare, KeyRound, ClipboardList, MapPin, QrCode, CalendarRange,
 } from 'lucide-react';
 import api from '../../api';
 import AsistenciaFormModal from './AsistenciaFormModal';
@@ -38,6 +39,18 @@ const UbicacionBadge = ({ u }) => {
       className="inline-flex items-center gap-0.5 text-[11px] text-neutral-500 hover:text-white ml-1 align-middle px-1 py-2 -my-2 md:p-0 md:my-0">
       <MapPin size={11} />{u.distancia_m != null ? formatearDistancia(u.distancia_m) : ''}
     </a>
+  );
+};
+
+// Evento al que quedó asociada la asistencia (con la productora en el título)
+const EventoTag = ({ a, className = '' }) => {
+  if (!a.evento_nombre) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs text-neutral-300 min-w-0 ${className}`} title={`${a.evento_nombre} · ${a.empresa_nombre}`}>
+      <CalendarRange size={12} className="text-neutral-500 shrink-0" />
+      <span className="truncate">{a.evento_nombre}</span>
+      <span className="text-neutral-500 truncate hidden sm:inline">· {a.empresa_nombre}</span>
+    </span>
   );
 };
 
@@ -87,6 +100,7 @@ const ActivasPanel = ({ activas, cargando, onCerrar, onEditar }) => {
                 <p className="text-xs text-neutral-500 mt-0.5">
                   Entrada {formatearFechaCorta(a.entrada)} a las {formatearHoraCorta(a.entrada)} <OrigenBadge origen={a.origen_entrada} />
                 </p>
+                <EventoTag a={a} className="mt-1 max-w-full" />
               </div>
               <span className={`flex items-center gap-1.5 text-sm font-semibold tabular-nums whitespace-nowrap shrink-0 ${alerta ? 'text-amber-300' : 'text-emerald-300'}`}>
                 <span className={`w-2 h-2 rounded-full ${alerta ? 'bg-amber-400' : 'bg-emerald-400 animate-pulse'}`} />
@@ -116,13 +130,19 @@ const ActivasPanel = ({ activas, cargando, onCerrar, onEditar }) => {
 // ---------------------------------------------------------------------------
 
 const AsistenciasAdmin = () => {
-  const [tab, setTab] = useState('activas');
+  // "Ver asistencias" desde Eventos llega con ?evento=ID: abre el historial filtrado por ese evento
+  const [searchParams] = useSearchParams();
+  const eventoInicial = searchParams.get('evento') || '';
+  const [tab, setTab] = useState(eventoInicial ? 'historial' : 'activas');
   const [empleados, setEmpleados] = useState([]);
   const [empresas, setEmpresas] = useState([]);
+  const [eventos, setEventos] = useState([]);
   const [activas, setActivas] = useState([]);
   const [cargandoActivas, setCargandoActivas] = useState(true);
 
-  const [filtros, setFiltros] = useState({ desde: haceDiasISO(6), hasta: hoyISO(), empleado_id: '', estado: '' });
+  const [filtros, setFiltros] = useState(() => (eventoInicial
+    ? { desde: '', hasta: '', empleado_id: '', estado: '', evento_id: eventoInicial }
+    : { desde: haceDiasISO(6), hasta: hoyISO(), empleado_id: '', estado: '', evento_id: '' }));
   const [historial, setHistorial] = useState({ data: [], total: 0, totalPages: 1, page: 1, resumen: { abiertas: 0, horasCerradas: 0 } });
   const [cargandoHistorial, setCargandoHistorial] = useState(false);
   const [exportando, setExportando] = useState(false);
@@ -143,7 +163,7 @@ const AsistenciasAdmin = () => {
       const res = await api.get('/empleados');
       setEmpleados(res.data);
     } catch (err) {
-      setError('No se pudieron cargar los empleados');
+      setError('No se pudieron cargar los técnicos');
     }
   }, []);
 
@@ -186,6 +206,7 @@ const AsistenciasAdmin = () => {
     cargarEmpleados();
     cargarActivas();
     api.get('/empresas').then((r) => setEmpresas(r.data)).catch(() => {});
+    api.get('/eventos').then((r) => setEventos(r.data)).catch(() => {});
     const t = setInterval(cargarActivas, 60000);
     return () => clearInterval(t);
   }, [cargarEmpleados, cargarActivas]);
@@ -258,7 +279,7 @@ const AsistenciasAdmin = () => {
           </div>
           <div>
             <h1 className="page-title">Control de asistencia</h1>
-            <p className="text-sm text-neutral-400">Entradas y salidas marcadas por los trabajadores</p>
+            <p className="text-sm text-neutral-400">Entradas y salidas marcadas por los técnicos</p>
           </div>
         </div>
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
@@ -339,10 +360,20 @@ const AsistenciasAdmin = () => {
               <input type="date" className="input py-1.5 text-xs" value={filtros.hasta} onChange={(e) => setFiltros({ ...filtros, hasta: e.target.value })} />
             </div>
             <div>
-              <label className="label">Empleado</label>
+              <label className="label">Técnico</label>
               <select className="select py-1.5 text-xs w-full sm:w-48" value={filtros.empleado_id} onChange={(e) => setFiltros({ ...filtros, empleado_id: e.target.value })}>
                 <option value="">Todos</option>
                 {empleados.map((emp) => <option key={emp.id} value={emp.id}>{emp.nombre}</option>)}
+              </select>
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <label className="label">Evento</label>
+              <select className="select py-1.5 text-xs w-full sm:w-56" value={filtros.evento_id} onChange={(e) => setFiltros({ ...filtros, evento_id: e.target.value })}>
+                <option value="">Todos</option>
+                <option value="ninguno">Sin evento</option>
+                {eventos.map((ev) => (
+                  <option key={ev.id} value={ev.id}>{ev.nombre} · {ev.empresa_nombre} ({formatearFechaISO(ev.fecha_inicio)})</option>
+                ))}
               </select>
             </div>
             <div>
@@ -379,6 +410,7 @@ const AsistenciasAdmin = () => {
                   <div className="min-w-0">
                     <p className="text-white font-medium truncate">{a.empleado_nombre}</p>
                     <p className="text-xs text-neutral-500 mt-0.5">{formatearFechaISO(a.fecha)}</p>
+                    <EventoTag a={a} className="mt-1 max-w-full" />
                   </div>
                   {a.turno_id
                     ? <span className="badge-brand shrink-0">Turno #{a.turno_id}</span>
@@ -438,7 +470,8 @@ const AsistenciasAdmin = () => {
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wider text-neutral-500 border-b border-neutral-800/60">
                   <th className="px-4 py-3">Fecha</th>
-                  <th className="px-4 py-3">Empleado</th>
+                  <th className="px-4 py-3">Técnico</th>
+                  <th className="px-4 py-3">Evento</th>
                   <th className="px-4 py-3">Entrada</th>
                   <th className="px-4 py-3">Salida</th>
                   <th className="px-4 py-3">Horas</th>
@@ -448,10 +481,10 @@ const AsistenciasAdmin = () => {
               </thead>
               <tbody className="divide-y divide-neutral-800/40">
                 {cargandoHistorial && historial.data.length === 0 && (
-                  <tr><td colSpan={7} className="px-4 py-8"><div className="skeleton h-6" /></td></tr>
+                  <tr><td colSpan={8} className="px-4 py-8"><div className="skeleton h-6" /></td></tr>
                 )}
                 {!cargandoHistorial && historial.data.length === 0 && (
-                  <tr><td colSpan={7} className="px-4 py-10 text-center text-neutral-500">No hay asistencias para estos filtros</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-10 text-center text-neutral-500">No hay asistencias para estos filtros</td></tr>
                 )}
                 {historial.data.map((a) => (
                   <tr key={a.id} className="hover:bg-neutral-800/20">
@@ -463,6 +496,9 @@ const AsistenciasAdmin = () => {
                           <MessageSquare size={13} className="inline ml-1.5 text-neutral-500" />
                         </span>
                       )}
+                    </td>
+                    <td className="px-4 py-3 max-w-[16rem]">
+                      {a.evento_nombre ? <EventoTag a={a} className="max-w-full" /> : <span className="text-neutral-600">—</span>}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span className="text-neutral-200 tabular-nums">{formatearHoraCorta(a.entrada)}</span> <OrigenBadge origen={a.origen_entrada} /><UbicacionBadge u={a.ubicacion_entrada} />
@@ -528,6 +564,8 @@ const AsistenciasAdmin = () => {
         <AsistenciaFormModal
           asistencia={modalForm.asistencia}
           empleados={empleados}
+          eventos={eventos}
+          onTecnicoCreado={(tec) => setEmpleados((prev) => [...prev, tec].sort((a, b) => a.nombre.localeCompare(b.nombre)))}
           onClose={() => setModalForm(null)}
           onGuardado={() => {
             mostrarAviso(modalForm.asistencia ? 'Asistencia corregida' : 'Asistencia registrada');

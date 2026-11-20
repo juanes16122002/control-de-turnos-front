@@ -1,10 +1,12 @@
 import React from 'react';
-import { Calendar, Clock, Building2, Tag, X } from 'lucide-react';
+import { Calendar, Clock, Tag, X } from 'lucide-react';
+import EmpresaSelect from './empresas/EmpresaSelect';
 
 const TurnoForm = ({
   empresas,
   empresaTurno,
   setEmpresaTurno,
+  onEmpresaCreada,
   fechaTurno,
   setFechaTurno,
   horaEntradaTurno,
@@ -81,20 +83,15 @@ const TurnoForm = ({
         </div>
 
         <div>
-          <label className="label">Empresa</label>
-          <div className="relative">
-            <Building2 className="w-4 h-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" size={16} />
-            <select
-              value={empresaTurno}
-              onChange={(e) => setEmpresaTurno(e.target.value)}
-              className="select pl-10"
-            >
-              <option value="">Selecciona empresa</option>
-              {empresas.map((emp) => (
-                <option key={emp.id} value={emp.id}>{emp.nombre}</option>
-              ))}
-            </select>
-          </div>
+          <label className="label" htmlFor="turno-empresa">Empresa</label>
+          <EmpresaSelect
+            id="turno-empresa"
+            empresas={empresas}
+            value={empresaTurno}
+            onChange={setEmpresaTurno}
+            onCreada={onEmpresaCreada}
+            conIcono
+          />
         </div>
 
         <div>

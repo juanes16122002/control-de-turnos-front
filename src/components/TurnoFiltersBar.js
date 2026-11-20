@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Pencil, Trash2, Plus, X, Check, CalendarDays, Building2, FileSpreadsheet, FileText } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Plus, CalendarDays, Building2, FileSpreadsheet, FileText } from 'lucide-react';
 
 const TurnoFiltersBar = ({
   empleadoSeleccionado,
@@ -16,18 +17,7 @@ const TurnoFiltersBar = ({
   onExportExcel,
   onExportPDF,
   puedeExportar,
-  nuevaEmpresa,
-  setNuevaEmpresa,
-  editandoEmpresaId,
-  setEditandoEmpresaId,
-  editandoEmpresaNombre,
-  setEditandoEmpresaNombre,
-  onCrearEmpresa,
-  onRenombrarEmpresa,
-  onEliminarEmpresa,
 }) => {
-  const [gestionando, setGestionando] = useState(false);
-
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:items-center">
@@ -111,80 +101,13 @@ const TurnoFiltersBar = ({
             </button>
           </div>
 
-          <button
-            onClick={() => setGestionando(!gestionando)}
-            className={`btn-ghost btn-xs ${gestionando ? 'text-white' : ''}`}
-          >
+          <Link to="/empresas" className="btn-ghost btn-xs" title="Agregar, renombrar o eliminar empresas">
             <Building2 size={14} />
-            Empresas
-          </button>
+            Gestionar empresas
+          </Link>
         </div>
       </div>
 
-      {gestionando && (
-        <div className="glass rounded-xl p-4 animate-slide-down">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-semibold text-neutral-300 uppercase tracking-wider">Gestionar empresas</h3>
-            <button onClick={() => setGestionando(false)} className="btn-ghost btn-xs">
-              <X size={12} />
-            </button>
-          </div>
-
-          <form onSubmit={onCrearEmpresa} className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={nuevaEmpresa}
-              onChange={(e) => setNuevaEmpresa(e.target.value)}
-              placeholder="Nombre de la nueva empresa"
-              className="input text-xs flex-1"
-            />
-            <button type="submit" disabled={!nuevaEmpresa.trim()} className="btn-success btn-xs">
-              <Plus size={14} /> Agregar
-            </button>
-          </form>
-
-          <div className="space-y-1.5 max-h-48 overflow-y-auto">
-            {empresas.length === 0 ? (
-              <p className="text-xs text-neutral-500 text-center py-4">No hay empresas registradas</p>
-            ) : (
-              empresas.map((emp) => (
-                <div key={emp.id} className="flex items-center gap-2 bg-neutral-800/30 rounded-lg px-3 py-2 border border-neutral-700/30">
-                  {editandoEmpresaId === emp.id ? (
-                    <>
-                      <input
-                        type="text"
-                        value={editandoEmpresaNombre}
-                        onChange={(e) => setEditandoEmpresaNombre(e.target.value)}
-                        className="input text-xs flex-1"
-                        autoFocus
-                      />
-                      <button onClick={() => onRenombrarEmpresa(emp.id)} className="btn-ghost btn-xs text-emerald-400">
-                        <Check size={14} />
-                      </button>
-                      <button onClick={() => setEditandoEmpresaId(null)} className="btn-ghost btn-xs">
-                        <X size={14} />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <span className="flex-1 text-sm text-neutral-300">{emp.nombre}</span>
-                      <button
-                        onClick={() => { setEditandoEmpresaId(emp.id); setEditandoEmpresaNombre(emp.nombre); }}
-                        className="btn-ghost btn-xs text-amber-400"
-                      >
-                        <Pencil size={12} />
-                      </button>
-                      <button onClick={() => onEliminarEmpresa(emp.id)} className="btn-ghost btn-xs text-red-400">
-                        <Trash2 size={12} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

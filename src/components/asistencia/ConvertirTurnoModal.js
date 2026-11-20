@@ -6,9 +6,10 @@ import { formatearDuracion, formatearFechaISO, formatearHoraCorta, mensajeError 
 
 // Crea un turno (con cálculo de sueldo) a partir de una asistencia cerrada
 const ConvertirTurnoModal = ({ asistencia, empresas, onClose, onConvertido }) => {
-  const [nombreEvento, setNombreEvento] = useState('');
+  // Si la asistencia pertenece a un evento, el turno parte con su nombre y su productora
+  const [nombreEvento, setNombreEvento] = useState(asistencia.evento_nombre || '');
   const [area, setArea] = useState('');
-  const [empresaId, setEmpresaId] = useState('');
+  const [empresaId, setEmpresaId] = useState(asistencia.empresa_id ? String(asistencia.empresa_id) : '');
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
@@ -43,12 +44,12 @@ const ConvertirTurnoModal = ({ asistencia, empresas, onClose, onConvertido }) =>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="label" htmlFor="conv-evento">Evento</label>
-          <input id="conv-evento" className="input" value={nombreEvento} onChange={(e) => setNombreEvento(e.target.value)} autoFocus />
+          <input id="conv-evento" className="input" value={nombreEvento} onChange={(e) => setNombreEvento(e.target.value)} autoFocus={!asistencia.evento_nombre} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="label" htmlFor="conv-area">Área</label>
-            <input id="conv-area" className="input" value={area} onChange={(e) => setArea(e.target.value)} />
+            <input id="conv-area" className="input" value={area} onChange={(e) => setArea(e.target.value)} autoFocus={!!asistencia.evento_nombre} />
           </div>
           <div>
             <label className="label" htmlFor="conv-empresa">Empresa</label>
@@ -59,7 +60,7 @@ const ConvertirTurnoModal = ({ asistencia, empresas, onClose, onConvertido }) =>
           </div>
         </div>
         <p className="text-xs text-neutral-500">
-          El turno se calcula con la tarifa del empleado (8 h base y el resto como extra). Una vez convertida,
+          El turno se calcula con la tarifa del técnico (8 h base y el resto como extra). Una vez convertida,
           la asistencia queda bloqueada para edición.
         </p>
         {error && (

@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { CircleAlert } from 'lucide-react';
 import api from '../../api';
 import Modal from './Modal';
-import { inputLocalAIso, isoAInputLocal, mensajeError } from '../../helpers/asistencia';
+import NuevoTecnicoInline from '../tecnicos/NuevoTecnicoInline';
+import { formatearFechaISO, inputLocalAIso, isoAInputLocal, mensajeError } from '../../helpers/asistencia';
+
+const EVENTO_AUTO = '__auto__';
 
 // Crear una asistencia manual (asistencia = null) o corregir una existente
-const AsistenciaFormModal = ({ asistencia, empleados, onClose, onGuardado }) => {
+const AsistenciaFormModal = ({ asistencia, empleados, eventos = [], onClose, onGuardado, onTecnicoCreado }) => {
   const editando = !!asistencia;
+  // Al crear, por defecto el evento se resuelve en el servidor según la asignación del empleado
+  const [eventoId, setEventoId] = useState(editando ? String(asistencia.evento_id || '') : EVENTO_AUTO);
   const [empleadoId, setEmpleadoId] = useState(asistencia?.empleado_id || '');
   const [entrada, setEntrada] = useState(isoAInputLocal(asistencia?.entrada));
   const [salida, setSalida] = useState(isoAInputLocal(asistencia?.salida));
@@ -17,7 +22,7 @@ const AsistenciaFormModal = ({ asistencia, empleados, onClose, onGuardado }) => 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!editando && !empleadoId) return setError('Selecciona un empleado');
+    if (!editando && !empleadoId) return setError('Selecciona un técnico');
     if (!entrada) return setError('La entrada es obligatoria');
     if (salida && new Date(salida) <= new Date(entrada)) {
       return setError('La salida debe ser posterior a la entrada');
@@ -28,6 +33,7 @@ const AsistenciaFormModal = ({ asistencia, empleados, onClose, onGuardado }) => 
       salida: inputLocalAIso(salida),
       observacion: observacion.trim() || null,
     };
+    if (eventoId !== EVENTO_AUTO) payload.evento_id = eventoId ? Number(eventoId) : null;
 
     try {
       setGuardando(true);
@@ -47,11 +53,18 @@ const AsistenciaFormModal = ({ asistencia, empleados, onClose, onGuardado }) => 
       <form onSubmit={handleSubmit} className="space-y-4">
         {!editando && (
           <div>
-            <label className="label" htmlFor="asis-emp">Empleado</label>
+            <label className="label" htmlFor="asis-emp">Técnico</label>
             <select id="asis-emp" className="select" value={empleadoId} onChange={(e) => setEmpleadoId(e.target.value)}>
               <option value="">Selecciona…</option>
               {empleados.map((emp) => <option key={emp.id} value={emp.id}>{emp.nombre}</option>)}
             </select>
+            <NuevoTecnicoInline
+              className="mt-2"
+              onCreado={(tec) => {
+                onTecnicoCreado?.(tec);
+                setEmpleadoId(String(tec.id));
+              }}
+            />
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -63,6 +76,16 @@ const AsistenciaFormModal = ({ asistencia, empleados, onClose, onGuardado }) => 
             <label className="label" htmlFor="asis-salida">Salida <span className="normal-case text-neutral-600">(opcional)</span></label>
             <input id="asis-salida" type="datetime-local" className="input" value={salida} onChange={(e) => setSalida(e.target.value)} />
           </div>
+        </div>
+        <div>
+          <label className="label" htmlFor="asis-evento">Evento</label>
+          <select id="asis-evento" className="select" value={eventoId} onChange={(e) => setEventoId(e.target.value)}>
+            {!editando && <option value={EVENTO_AUTO}>Automático (según los eventos asignados al técnico)</option>}
+            <option value="">Sin evento</option>
+            {eventos.map((ev) => (
+              <option key={ev.id} value={ev.id}>{ev.nombre} · {ev.empresa_nombre} ({formatearFechaISO(ev.fecha_inicio)})</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="label" htmlFor="asis-obs">Observación</label>
